@@ -51,9 +51,14 @@ INSTALLED_APPS = [
     'api.apps.ApiConfig',
     # Installed packages
     'rest_framework',
+    # https://stackoverflow.com/questions/35760943/how-can-i-enable-cors-on-django-rest-framework
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
+    # Adding CORS support
+    'corsheaders.middleware.CorsMiddleware',
+
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -61,6 +66,12 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
+
+# Vue app urls
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:5173',
+    'localhost:5173',
 ]
 
 ROOT_URLCONF = 'meduzzen_backend.urls'
