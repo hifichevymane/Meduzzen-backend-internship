@@ -1,11 +1,8 @@
-FROM python:3.11.3-slim-buster
+FROM python:3.11.3-alpine
 
 ENV PYTHONBUFFERED=1
 
-# .env file variables
 # https://stackoverflow.com/questions/30494050/how-do-i-pass-environment-variables-to-docker-containers
-ENV SECRET_KEY=
-ENV DEBUG=
 
 WORKDIR /code
 
