@@ -8,15 +8,17 @@ Meduzzen backend intership
    ```sh
    cd /meduzzen_backend
    ```
-2. Create the Docker image:
+2. Create `.env` file in `/meduzzen_backend` directory and paste all needed variables like in `.env.sample` file
+
+3. Create the Docker image:
    ```sh
    docker build --tag meduzzen_backend .
    ```
-3. Run the Docker image:
+4. Run the Docker image:
    ```sh
    docker run --env-file ./.env --publish 8000:8000 meduzzen_backend
    ```
-4. Go to the `localhost:8000` in your browser:
+5. Go to the `localhost:8000` in your browser:
 
 ## How to run tests within a Docker container
 
