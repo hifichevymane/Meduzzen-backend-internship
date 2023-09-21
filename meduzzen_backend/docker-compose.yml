@@ -1,0 +1,44 @@
+version: "3.8"
+
+services:
+  web:
+    build: .
+    container_name: django
+    command: python3 manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/code
+      - ./code:/apps
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres-db
+      - redis
+    env_file:
+      - .env
+
+  postgres-db:
+    image: postgres:latest
+    container_name: postgres_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - data:/var/lib/postgresql/data
+    env_file:
+      - .env
+
+  # pg-admin:
+  #   image: dpage/pgadmin4:latest
+  #   container_name: pg_admin
+  #   env_file:
+  #     - .env
+  #   ports:
+  #     - "5050:5050"
+
+  redis:
+    image: redis:latest
+    container_name: redis_cache
+    ports:
+      - "6379:6379"
+
+volumes:
+  data:
