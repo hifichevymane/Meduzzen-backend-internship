@@ -5,69 +5,76 @@ Meduzzen backend intership
 ## How to start the project using Docker
 
 1. Go to the `/meduzzen_backend` folder:
-   ```sh
-   cd /meduzzen_backend
-   ```
+
+```sh
+cd /meduzzen_backend
+```
+
 2. Create `.env` file in `/meduzzen_backend` directory and paste all needed variables like in `.env.sample` file
 
-3. Create the Docker image:
-   ```sh
-   docker build --tag meduzzen_backend .
-   ```
-4. Run the Docker image:
-   ```sh
-   docker run --env-file ./.env --publish 8000:8000 meduzzen_backend
-   ```
-5. Go to the `localhost:8000` in your browser:
+3. Build and run the Docker compose file:
+
+```sh
+docker-compose up --build
+```
+
+4. Go to the `localhost:8000` in your browser:
 
 ## How to run tests within a Docker container
 
-1. Make sure you've run a Docker container:
-   ```sh
-   docker ps
-   ```
-2. If you see message like this:
+1. Run docker-compose file with detached mode:
 
-   ```
-   CONTAINER ID   IMAGE              COMMAND                  CREATED         STATUS         PORTS                    NAMES
-   container-id  meduzzen_backend   "python3 manage.py r…"   2 minutes ago   Up 2 minutes   0.0.0.0:8000->8000/tcp   container-name
-   ```
+```sh
+docker-compose up -d
+```
 
-   That means that the container is running
+2. Run this command in terminal:
 
-3. Run tests within the Docker container:
-   ```sh
-   docker exec -it container-id/container-name python manage.py test
-   ```
+```sh
+docker-compose run web python manage.py test
+```
 
 ## How to start the project not using Docker
 
 1. Create an virtual enviroment:
-   ```sh
-   python -m venv venv
-   ```
+
+```sh
+python -m venv venv
+```
+
 2. Activate the virtual environment:
    > Windows
-   ```sh
-   venv\Scripts\activate
-   ```
-   > Linux/ MacOS
-   ```sh
-   source venv/bin/activate
-   ```
-3. Install all dependencies from `requirements.txt`:
-   ```sh
-   pip install -r requirements.txt
-   ```
-4. Create `.env` file in `/meduzzen_backend` directory and paste all needed variables like in `.env.sample` file
-5. Go to the `/meduzzen_backend` directory:
-   ```sh
-   cd /meduzzen_backend
-   ```
+
+```sh
+venv\Scripts\activate
+```
+
+> Linux/ MacOS
+
+```sh
+source venv/bin/activate
+```
+
+3. Go to the `/meduzzen_backend` directory:
+
+```sh
+cd /meduzzen_backend
+```
+
+4. Install all dependencies from `requirements.txt`:
+
+```sh
+pip install -r requirements.txt
+```
+
+5. Create `.env` file in `/meduzzen_backend` directory and paste all needed variables like in `.env.sample` file
+
 6. Run this command:
-   ```sh
-   python manage.py runserver
-   ```
+
+```sh
+python manage.py runserver
+```
+
 7. Go to http://127.0.0.1:8000/ in your browser
 
 ## How to run tests not using Docker

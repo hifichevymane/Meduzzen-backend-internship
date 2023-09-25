@@ -35,7 +35,8 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG')
 
-ALLOWED_HOSTS = []
+# Allowed hosts access to the app
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
 
 
 # Application definition
@@ -50,9 +51,12 @@ INSTALLED_APPS = [
     # Django apps
     'api.apps.ApiConfig',
     # Installed packages
+
     'rest_framework',
     # https://stackoverflow.com/questions/35760943/how-can-i-enable-cors-on-django-rest-framework
     'corsheaders',
+    # PostgreSQL support
+    'django.contrib.postgres',
 ]
 
 MIDDLEWARE = [
@@ -68,9 +72,9 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-# Vue app urls
+# Vue app url
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:5173',
+    os.environ.get('FRONTEND_URL'),
 ]
 
 ROOT_URLCONF = 'meduzzen_backend.urls'
@@ -99,8 +103,27 @@ WSGI_APPLICATION = 'meduzzen_backend.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        # PostgreSQL db data
+        # Getting all data from .env file
+        'NAME': os.environ.get('POSTGRES_DB'),
+        'USER': os.environ.get('POSTGRES_USER'),
+        'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
+        'HOST': os.environ.get('POSTGRES_HOST'),
+        'PORT': os.environ.get('POSTGRES_PORT'),
+    }
+}
+
+# Adding Redis caching
+# https://www.dragonflydb.io/faq/how-to-use-redis-with-django
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        # Get Redis url from .env file
+        'LOCATION': os.environ.get('REDIS_URL'),
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        }
     }
 }
 

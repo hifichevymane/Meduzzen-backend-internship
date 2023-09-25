@@ -1,0 +1,60 @@
+version: "3.8"
+
+services:
+  api:
+    image: meduzzen-backend-api
+    container_name: django
+    volumes:
+      - .:/code
+      - ./code:/apps
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres-db
+      - redis
+    env_file:
+      - .env
+    networks:
+      - api-db-redis
+
+  postgres-db:
+    image: postgres:latest
+    container_name: postgres_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - data:/var/lib/postgresql/data
+    env_file:
+      - .env
+    networks:
+      api-db-redis:
+        # Have access the database using pgadmin4
+        ipv4_address: 172.24.0.6
+
+  pg-admin:
+    image: dpage/pgadmin4:latest
+    container_name: pg_admin
+    env_file:
+      - .env
+    ports:
+      - "5050:5050"
+    networks:
+      - api-db-redis
+
+  redis:
+    image: redis:latest
+    container_name: redis_cache
+    ports:
+      - "6379:6379"
+    networks:
+      - api-db-redis
+
+volumes:
+  data:
+
+networks:
+  api-db-redis:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.24.0.0/24
