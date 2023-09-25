@@ -27,7 +27,9 @@ services:
     env_file:
       - .env
     networks:
-      - api-db-redis
+      api-db-redis:
+        # Have access the database using pgadmin4
+        ipv4_address: 172.24.0.6
 
   pg-admin:
     image: dpage/pgadmin4:latest
@@ -52,3 +54,7 @@ volumes:
 
 networks:
   api-db-redis:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.24.0.0/24
