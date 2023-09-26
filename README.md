@@ -18,7 +18,16 @@ cd /meduzzen_backend
 docker-compose up --build
 ```
 
-4. Go to the `localhost:8000` in your browser:
+4. Go to `localhost:5050` login in pgadmin4 and register a server with host name/address `172.24.0.6`(you can change this value in docker-compose.yml )
+
+5. Create and apply migrations:
+
+```sh
+docker-compose run api python manage.py makemigrations
+docker-compose run api python manage.py migrate
+```
+
+6. Go to the `localhost:8000` in your browser:
 
 ## How to run tests within a Docker container
 
@@ -31,7 +40,7 @@ docker-compose up -d
 2. Run this command in terminal:
 
 ```sh
-docker-compose run web python manage.py test
+docker-compose run api python manage.py test
 ```
 
 ## How to start the project not using Docker
