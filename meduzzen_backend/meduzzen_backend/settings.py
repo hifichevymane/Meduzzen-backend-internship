@@ -14,6 +14,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 import os
 import sys
+import logging
 
 # load variables from .env file
 load_dotenv()
@@ -78,6 +79,36 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 ROOT_URLCONF = 'meduzzen_backend.urls'
+
+# Logging settings
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+
+    'formatters': {
+        'console': {
+            'format': '[{module} {asctime} {levelname}] - {message}',
+            'style': '{',
+        },
+    },
+
+    'handlers': {
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'console'
+        },
+    },
+
+    'loggers': {
+        # Main logger
+        'main': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': True
+        },
+    },
+}
 
 TEMPLATES = [
     {

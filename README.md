@@ -12,13 +12,16 @@ cd /meduzzen_backend
 
 2. Create `.env` file in `/meduzzen_backend` directory and paste all needed variables like in `.env.sample` file
 
-3. Build and run the Docker compose file:
+3. Build the image and run `docker-compose.yml`:
 
 ```sh
+docker build --tag meduzzen-backend-api .
 docker-compose up --build
 ```
 
-4. Go to the `localhost:8000` in your browser:
+4. Go to `localhost:5050` login in pgadmin4 and register a server with host name/address `172.24.0.6`(you can change this value in docker-compose.yml )
+
+5. Go to the `localhost:8000` in your browser:
 
 ## How to run tests within a Docker container
 
@@ -31,7 +34,7 @@ docker-compose up -d
 2. Run this command in terminal:
 
 ```sh
-docker-compose run web python manage.py test
+docker exec -it <django-container-id> python manage.py test
 ```
 
 ## How to start the project not using Docker

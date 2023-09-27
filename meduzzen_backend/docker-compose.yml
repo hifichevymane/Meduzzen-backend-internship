@@ -4,6 +4,8 @@ services:
   api:
     image: meduzzen-backend-api
     container_name: django
+    tty: true
+    stdin_open: true
     volumes:
       - .:/code
       - ./code:/apps

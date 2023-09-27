@@ -13,6 +13,11 @@ RUN pip install -r requirements.txt --upgrade
 
 COPY . .
 
-EXPOSE 8000
+# Copy start.sh script into project folder
+COPY start.sh .
 
-CMD ["python3", "manage.py", "runserver", "0.0.0.0:8000"]
+# Give access rights to start.sh
+RUN chmod +x start.sh
+
+# Run the script
+ENTRYPOINT [ "./start.sh" ]
