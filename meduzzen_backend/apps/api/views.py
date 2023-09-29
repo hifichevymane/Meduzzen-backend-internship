@@ -1,6 +1,7 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
+from rest_framework.filters import OrderingFilter
 from api.models import User
 from api.serializers import UserSerializer
 import logging
@@ -22,3 +23,8 @@ def health_check(request):
 class UserModelViewSet(ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+
+    # Ordering by 'created_at' field
+    # https://www.edureka.co/community/74090/how-order-json-from-serializers-file-django-rest-framework
+    filter_backends = (OrderingFilter, )
+    ordering = ('created_at', ) 

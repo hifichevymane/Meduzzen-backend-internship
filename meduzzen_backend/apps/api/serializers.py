@@ -14,8 +14,6 @@ class UserSerializer(serializers.ModelSerializer):
             'first_name': {'required': True},
             'last_name': {'required': True},
         }
-        # Ordering by 'created_at' field
-        order_by = ('created_at',)
 
     # Hashing the passsword
     # https://stackoverflow.com/questions/56226425/django-rest-framework-custom-user-not-hashing-password-serializer-issue
