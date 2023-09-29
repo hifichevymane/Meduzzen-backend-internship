@@ -21,7 +21,7 @@ docker-compose up --build
 
 4. Go to `localhost:5050` login in pgadmin4 and register a server with host name/address `172.24.0.6`(you can change this value in docker-compose.yml )
 
-5. Go to the `localhost:8000` in your browser:
+5. Go to the `localhost:8000/api/v1/` in your browser:
 
 ## How to run tests within a Docker container
 
