@@ -110,6 +110,13 @@ LOGGING = {
     },
 }
 
+# Django REST Framework settings
+REST_FRAMEWORK = {
+    # Pagination settings
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 10
+}
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -158,6 +165,8 @@ CACHES = {
     }
 }
 
+# Which user model to use
+AUTH_USER_MODEL = 'api.User'
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
