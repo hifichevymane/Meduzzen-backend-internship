@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from .managers import CustomUserManager
+from django.contrib.auth.models import BaseUserManager
 
 # Create your models here.
 # Abstract model TimeStampedModel
@@ -20,5 +20,5 @@ class User(AbstractUser, TimeStampedModel):
     first_name = models.CharField(max_length=30, blank=False, null=False)
     last_name = models.CharField(max_length=30, blank=False, null=False)
 
-    # Assing custom model manager
-    objects = CustomUserManager()
+    # Assing base user manager for admin panel
+    objects = BaseUserManager()
