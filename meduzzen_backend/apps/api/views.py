@@ -25,6 +25,5 @@ class UserModelViewSet(ModelViewSet):
     serializer_class = UserSerializer
 
     # Ordering by 'created_at' field
-    # https://www.edureka.co/community/74090/how-order-json-from-serializers-file-django-rest-framework
     filter_backends = (OrderingFilter, )
     ordering = ('created_at', ) 

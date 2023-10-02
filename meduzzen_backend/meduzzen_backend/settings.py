@@ -14,7 +14,6 @@ from pathlib import Path
 from dotenv import load_dotenv
 import os
 import sys
-import logging
 
 # load variables from .env file
 load_dotenv()
@@ -52,9 +51,7 @@ INSTALLED_APPS = [
     # Django apps
     'api.apps.ApiConfig',
     # Installed packages
-
     'rest_framework',
-    # https://stackoverflow.com/questions/35760943/how-can-i-enable-cors-on-django-rest-framework
     'corsheaders',
     # PostgreSQL support
     'django.contrib.postgres',

@@ -16,7 +16,6 @@ class UserSerializer(serializers.ModelSerializer):
         }
 
     # Hashing the passsword
-    # https://stackoverflow.com/questions/56226425/django-rest-framework-custom-user-not-hashing-password-serializer-issue
     def create(self, validated_data):
         password = validated_data.pop('password')
         user = super().create(validated_data)

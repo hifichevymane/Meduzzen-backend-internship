@@ -10,7 +10,6 @@ class TimeStampedModel(models.Model):
 
     class Meta:
         # abstract = True to enable models inherit from TimeStampedModel
-        # https://www.geeksforgeeks.org/how-to-create-abstract-model-class-in-django/
         abstract = True
 
 # Custom User model
