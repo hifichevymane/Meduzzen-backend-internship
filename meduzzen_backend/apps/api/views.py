@@ -1,5 +1,9 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework.viewsets import ModelViewSet
+from rest_framework.filters import OrderingFilter
+from api.models import User
+from api.serializers import UserSerializer
 import logging
 
 # Create a logger
@@ -13,3 +17,13 @@ def health_check(request):
     # Execute logger message
     test_logger.info('Test logging')
     return Response(response)
+
+
+# User ModelViewSet to make CRUD operations
+class UserModelViewSet(ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+    # Ordering by 'created_at' field
+    filter_backends = (OrderingFilter, )
+    ordering = ('created_at', ) 

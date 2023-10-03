@@ -14,7 +14,6 @@ from pathlib import Path
 from dotenv import load_dotenv
 import os
 import sys
-import logging
 
 # load variables from .env file
 load_dotenv()
@@ -52,9 +51,7 @@ INSTALLED_APPS = [
     # Django apps
     'api.apps.ApiConfig',
     # Installed packages
-
     'rest_framework',
-    # https://stackoverflow.com/questions/35760943/how-can-i-enable-cors-on-django-rest-framework
     'corsheaders',
     # PostgreSQL support
     'django.contrib.postgres',
@@ -110,6 +107,13 @@ LOGGING = {
     },
 }
 
+# Django REST Framework settings
+REST_FRAMEWORK = {
+    # Pagination settings
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 10
+}
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -158,6 +162,8 @@ CACHES = {
     }
 }
 
+# Which user model to use
+AUTH_USER_MODEL = 'api.User'
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
