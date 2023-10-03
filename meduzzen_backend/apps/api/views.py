@@ -2,6 +2,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.filters import OrderingFilter
+from rest_framework.permissions import IsAuthenticated
 from api.models import User
 from api.serializers import UserSerializer
 import logging
@@ -23,6 +24,7 @@ def health_check(request):
 class UserModelViewSet(ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    permission_classes = (IsAuthenticated, )
 
     # Ordering by 'created_at' field
     filter_backends = (OrderingFilter, )
