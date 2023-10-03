@@ -7,7 +7,7 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 # Get 'signals' logger
-logger = logging.getLogger('signals')
+logger = logging.getLogger('models')
 
 # Log adding User model instance
 @receiver(post_save, sender=User)

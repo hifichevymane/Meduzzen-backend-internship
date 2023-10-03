@@ -1,18 +1,18 @@
 import pytest
 from django.contrib.auth import get_user_model
 
-# Get User model
+# # Get User model
 User = get_user_model()
 
 # Create your tests here.
 @pytest.mark.django_db
 def test_create_user():
-    username = "sfdf"
+    test_username = "sfdf"
 
-    existing_user = User.objects.filter(username=username).first()
+    existing_user = User.objects.filter(username=test_username).first()
     assert existing_user is None # If user exists
 
-    user = User.objects.create(username=username)
+    test_user = User.objects.create(username=test_username)
 
-    users = User.objects.all()
-    assert len(users) == 1
+    test_users = User.objects.all()
+    assert len(test_users) == 1
