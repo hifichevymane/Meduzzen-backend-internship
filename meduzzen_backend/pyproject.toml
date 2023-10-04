@@ -1,6 +1,6 @@
 [tool.ruff]
 # Decrease the maximum line length to 80 characters.
-line-length = 80
+line-length = 120
 
 exclude = [
     # Exclude migrations folder
@@ -9,6 +9,9 @@ exclude = [
 
 select = [
     "E", # pycodestyle
-    "F", #pyflakes
-    "I" # isort
+    "F", # pyflakes
+    "I", # isort
+    "DJ", # flake8-django
+    "PIE", # flake8-pie
+    "N", # pep8-naming
 ]
