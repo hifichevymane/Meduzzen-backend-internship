@@ -10,11 +10,12 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
-from pathlib import Path
-from dotenv import load_dotenv
 import os
 import sys
 from datetime import timedelta
+from pathlib import Path
+
+from dotenv import load_dotenv
 
 # load variables from .env file
 load_dotenv()
@@ -23,7 +24,6 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Keep django apps in the /apps directory
-# https://stackoverflow.com/questions/3948356/how-to-keep-all-my-django-applications-in-specific-folder/39747289#39747289
 sys.path.insert(0, os.path.join(BASE_DIR, 'apps'))
 
 
@@ -115,7 +115,8 @@ LOGGING = {
 # Django REST Framework settings
 REST_FRAMEWORK = {
     # Pagination settings
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'DEFAULT_PAGINATION_CLASS': 
+        'rest_framework.pagination.LimitOffsetPagination',
     'PAGE_SIZE': 10,
 
     # JWT token auth
@@ -134,7 +135,8 @@ AUTHENTICATION_BACKENDS = (
 DJOSER = {
     'LOGIN_FIELD': 'email',
     'SOCIAL_AUTH_TOKEN_STRATEGY': 'djoser.social.token.jwt.TokenStrategy',
-    'SOCIAL_AUTH_ALLOWED_REDIRECT_URIS': [os.environ.get('FRONTEND_URL'), f'{os.environ.get("FRONTEND_URL")}/login'],
+    'SOCIAL_AUTH_ALLOWED_REDIRECT_URIS': [os.environ.get('FRONTEND_URL'), 
+                                          f'{os.environ.get("FRONTEND_URL")}/login'],
     'SERIALIZERS': {
         'user_create': 'api.serializers.UserSerializer',
     }
@@ -142,7 +144,7 @@ DJOSER = {
 
 # JWT Token auth settings
 SIMPLE_JWT = {
-    "AUTH_HEADER_TYPES": ('JWT',),
+    "AUTH_HEADER_TYPES": ('JWT', 'Bearer'),
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
     "ROTATE_REFRESH_TOKENS": False,
@@ -158,11 +160,11 @@ SIMPLE_JWT = {
     "JWK_URL": None,
     "LEEWAY": 0,
 
-    "AUTH_HEADER_TYPES": ("Bearer",),
     "AUTH_HEADER_NAME": "HTTP_AUTHORIZATION",
     "USER_ID_FIELD": "id",
     "USER_ID_CLAIM": "user_id",
-    "USER_AUTHENTICATION_RULE": "rest_framework_simplejwt.authentication.default_user_authentication_rule",
+    "USER_AUTHENTICATION_RULE": 
+        "rest_framework_simplejwt.authentication.default_user_authentication_rule",
 
     "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
     "TOKEN_TYPE_CLAIM": "token_type",
@@ -174,17 +176,25 @@ SIMPLE_JWT = {
     "SLIDING_TOKEN_LIFETIME": timedelta(minutes=5),
     "SLIDING_TOKEN_REFRESH_LIFETIME": timedelta(days=1),
 
-    "TOKEN_OBTAIN_SERIALIZER": "rest_framework_simplejwt.serializers.TokenObtainPairSerializer",
-    "TOKEN_REFRESH_SERIALIZER": "rest_framework_simplejwt.serializers.TokenRefreshSerializer",
-    "TOKEN_VERIFY_SERIALIZER": "rest_framework_simplejwt.serializers.TokenVerifySerializer",
-    "TOKEN_BLACKLIST_SERIALIZER": "rest_framework_simplejwt.serializers.TokenBlacklistSerializer",
-    "SLIDING_TOKEN_OBTAIN_SERIALIZER": "rest_framework_simplejwt.serializers.TokenObtainSlidingSerializer",
-    "SLIDING_TOKEN_REFRESH_SERIALIZER": "rest_framework_simplejwt.serializers.TokenRefreshSlidingSerializer",
+    "TOKEN_OBTAIN_SERIALIZER": 
+        "rest_framework_simplejwt.serializers.TokenObtainPairSerializer",
+    "TOKEN_REFRESH_SERIALIZER": 
+        "rest_framework_simplejwt.serializers.TokenRefreshSerializer",
+    "TOKEN_VERIFY_SERIALIZER": 
+        "rest_framework_simplejwt.serializers.TokenVerifySerializer",
+    "TOKEN_BLACKLIST_SERIALIZER": 
+        "rest_framework_simplejwt.serializers.TokenBlacklistSerializer",
+    "SLIDING_TOKEN_OBTAIN_SERIALIZER": 
+        "rest_framework_simplejwt.serializers.TokenObtainSlidingSerializer",
+    "SLIDING_TOKEN_REFRESH_SERIALIZER": 
+        "rest_framework_simplejwt.serializers.TokenRefreshSlidingSerializer",
 }
 
 # OAuth2 settings
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.environ.get('SOCIAL_AUTH_GOOGLE_OAUTH2_KEY')
-SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.environ.get('SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET')
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.environ.get(
+    'SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET'
+)
 SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
     'https://www.googleapis.com/auth/userinfo.email',
     'https://www.googleapis.com/auth/userinfo.profile',
@@ -250,16 +260,20 @@ AUTH_USER_MODEL = 'api.User'
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        'NAME': 
+            'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'NAME': 
+            'django.contrib.auth.password_validation.MinimumLengthValidator',
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        'NAME': 
+            'django.contrib.auth.password_validation.CommonPasswordValidator',
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        'NAME': 
+            'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
 

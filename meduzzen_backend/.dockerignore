@@ -7,3 +7,7 @@ __pycache__
 .cache
 Dockerfile
 docker-compose.yml
+# ruff linter
+.ruff_cache/
+# pytest cache
+.pytest_cache/

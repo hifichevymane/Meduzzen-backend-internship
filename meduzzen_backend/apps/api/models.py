@@ -1,6 +1,8 @@
-from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.db import models
+
 from api.managers import CustomUserManager
+
 
 # Create your models here.
 # Abstract model TimeStampedModel

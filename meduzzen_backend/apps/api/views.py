@@ -1,11 +1,13 @@
+import logging
+
 from rest_framework.decorators import api_view
-from rest_framework.response import Response
-from rest_framework.viewsets import ModelViewSet
 from rest_framework.filters import OrderingFilter
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.viewsets import ModelViewSet
+
 from api.models import User
 from api.serializers import UserSerializer
-import logging
 
 # Create a logger
 test_logger = logging.getLogger('main')

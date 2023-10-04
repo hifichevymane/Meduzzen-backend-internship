@@ -1,7 +1,7 @@
 import pytest
 from django.contrib.auth import get_user_model
 from django.db.utils import IntegrityError
-from .fixtures.user_model_fixtures import test_user_data
+from fixtures.user_model_fixtures import test_user_data  #noqa: F401
 
 # # Get User model
 User = get_user_model()
@@ -19,7 +19,7 @@ def test_create_user_fail():
 
 # Test user creation with all required fields
 @pytest.mark.django_db
-def test_create_user_success(test_user_data):
+def test_create_user_success(test_user_data): #noqa: F811
     assert User.objects.create_user(**test_user_data)
 
 
