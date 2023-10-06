@@ -1,8 +1,6 @@
-name: Pull request check
+name: CI Python pull request/commit checking
 
-on:
-  pull_request:
-    branches: [develop]
+on: push
 
 jobs:
   build:
@@ -12,10 +10,12 @@ jobs:
       postgres-db:
         image: postgres:latest
         env:
-          POSTGRES_DB: meduzzen_backend
-          POSTGRES_NAME: postgres
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: 12345
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_NAME: ${{ secrets.POSTGRES_NAME }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
+          POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
 
     steps:
       - uses: actions/checkout@v3
@@ -24,6 +24,7 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: 3.11.3
+          cache: "pip"
 
       - name: Install dependencies
         run: |
