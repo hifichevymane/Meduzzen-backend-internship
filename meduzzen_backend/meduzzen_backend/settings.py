@@ -135,10 +135,10 @@ AUTHENTICATION_BACKENDS = (
 DJOSER = {
     'LOGIN_FIELD': 'email',
     'SOCIAL_AUTH_TOKEN_STRATEGY': 'djoser.social.token.jwt.TokenStrategy',
-    'SOCIAL_AUTH_ALLOWED_REDIRECT_URIS': [os.environ.get('FRONTEND_URL'), 
-                                          f'{os.environ.get("FRONTEND_URL")}/login'],
+    'SOCIAL_AUTH_ALLOWED_REDIRECT_URIS': ['http://localhost:5173'],
     'SERIALIZERS': {
         'user_create': 'api.serializers.UserSerializer',
+        'current_user': 'api.serializers.CurrentUserSerializer'
     }
 }
 
