@@ -39,11 +39,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r ./meduzzen_backend/requirements.txt
 
-      - name: Make migrations
-        run: /
-          python ./meduzzen_backend/manage.py makemigrations
-          python ./meduzzen_backend/manage.py migrate
-
       - name: Lint
         run: ruff check .
 
