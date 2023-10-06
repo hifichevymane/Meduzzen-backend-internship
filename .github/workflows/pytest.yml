@@ -33,5 +33,6 @@ jobs:
 
       - name: Run pytest
         run: pytest
+        working-directory: ./meduzzen_backend
         env:
           DJANGO_SETTINGS_MODULE: meduzzen_backend.settings
