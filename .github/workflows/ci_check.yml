@@ -41,8 +41,8 @@ jobs:
 
       - name: Make migrations
         run: /
-          python manage.py makemigrations
-          python manage.py migrate
+          python ./meduzzen_backend/manage.py makemigrations
+          python ./meduzzen_backend/manage.py migrate
 
       - name: Lint
         run: ruff check .
