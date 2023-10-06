@@ -6,4 +6,5 @@ class ApiConfig(AppConfig):
     name = 'api'
 
     def ready(self):
-        import api.signals # Need for signals to work
+        # Need for signals to work
+        import api.signals  #noqa: F401

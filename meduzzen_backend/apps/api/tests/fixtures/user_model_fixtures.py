@@ -1,5 +1,6 @@
 import pytest
 
+
 # Init test user data fixture
 @pytest.fixture
 def test_user_data():

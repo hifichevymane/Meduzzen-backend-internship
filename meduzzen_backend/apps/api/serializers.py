@@ -1,5 +1,7 @@
 from rest_framework import serializers
+
 from api.models import User
+
 
 # User serializer
 class UserSerializer(serializers.ModelSerializer):
@@ -10,7 +12,8 @@ class UserSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             # Make these fields required
             'email': {'required': True},
-            'password': {'write_only': True, 'required': True},  # Not display the password after creation
+            # Not display the password after creation
+            'password': {'write_only': True, 'required': True},
             'first_name': {'required': True},
             'last_name': {'required': True},
         }

@@ -1,7 +1,8 @@
 import logging
-from django.db.models.signals import post_save, post_delete
-from django.dispatch import receiver
+
 from django.contrib.auth import get_user_model
+from django.db.models.signals import post_delete, post_save
+from django.dispatch import receiver
 
 # Get User model
 User = get_user_model()
@@ -16,5 +17,5 @@ def log_user_creation(sender, instance, **kwargs):
 
 # Log deleting User model instance
 @receiver(post_delete, sender=User)
-def log_user_creation(sender, instance, **kwargs):
+def log_user_deletion(sender, instance, **kwargs):
     logger.info('The User instance has been deleted successfully!')

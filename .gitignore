@@ -6,6 +6,9 @@ __pycache__/
 # C extensions
 *.so
 
+# ruff linter
+.ruff_cache/
+
 # IDEs
 .vscode/
 .idea/
