@@ -10,7 +10,8 @@ from .serializers import CompanyCreateSerializer, CompanyDetailSerializer
 # Create your views here.
 # List of all companies
 class CompanyListAPIView(ListAPIView):
-    queryset = Company.objects.all()
+    # Get only visible companies
+    queryset = Company.objects.filter(visibility='visible')
     serializer_class = CompanyDetailSerializer
     permission_classes = (IsAuthenticated, )
 
