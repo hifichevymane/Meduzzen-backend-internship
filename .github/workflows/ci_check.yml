@@ -26,14 +26,8 @@ jobs:
           - 5432:5432
 
     steps:
-      - uses: jirutka/setup-alpine@v1
-        with:
-          branch: v3.15
-
-      - run: cat /etc/alpine-release
-        shell: alpine.sh {0}
-
-      - uses: actions/checkout@v4
+      - name: Check out repository code
+        uses: actions/checkout@v4
 
       - name: Setup python
         uses: actions/setup-python@v4
@@ -54,3 +48,9 @@ jobs:
         working-directory: ./meduzzen_backend
         env:
           DJANGO_SETTINGS_MODULE: meduzzen_backend.settings
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_NAME: ${{ secrets.POSTGRES_NAME }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
+          POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
