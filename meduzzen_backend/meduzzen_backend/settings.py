@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # Django apps
     'api.apps.ApiConfig',
+    'companies.apps.CompaniesConfig',
     # Installed packages
     'rest_framework',
     'corsheaders',
@@ -145,7 +146,7 @@ DJOSER = {
 # JWT Token auth settings
 SIMPLE_JWT = {
     "AUTH_HEADER_TYPES": ('JWT', 'Bearer'),
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
     "ROTATE_REFRESH_TOKENS": False,
     "BLACKLIST_AFTER_ROTATION": False,

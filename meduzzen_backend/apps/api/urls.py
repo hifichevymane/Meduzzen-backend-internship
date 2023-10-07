@@ -11,6 +11,7 @@ urlpatterns = [
     # health_check endpoint url
     path('', views.health_check, name='health_check'),
     path('', include(router.urls), name='users'),
+    path('', include('companies.urls'), name='companies'),
     # Djoser auth pathes
     path('auth/', include('djoser.urls')),
     path('auth/', include('djoser.urls.jwt')),
