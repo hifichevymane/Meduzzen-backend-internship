@@ -43,7 +43,5 @@ jobs:
       - name: Test
         env:
           DJANGO_SETTINGS_MODULE: meduzzen_backend.settings
-          DATABASE_NAME: test_db_postgres
-          DATABASE_ENGINE: postgresql
         working-directory: ./meduzzen_backend
         run: pytest
