@@ -45,12 +45,3 @@ jobs:
 
       - name: Test
         run: pytest
-        working-directory: ./meduzzen_backend
-        env:
-          DJANGO_SETTINGS_MODULE: meduzzen_backend.settings
-          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
-          POSTGRES_NAME: ${{ secrets.POSTGRES_NAME }}
-          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-          POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
-          POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
