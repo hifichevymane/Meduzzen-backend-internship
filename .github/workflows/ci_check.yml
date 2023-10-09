@@ -44,8 +44,9 @@ jobs:
         run: ruff check .
 
       - name: Test
-        run: python manage.py test
-        working-directory: ./meduzzen_backend
         env:
+          DJANGO_SETTINGS_MODULE: meduzzen_backend.settings
           SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
           FRONTEND_URL: http://localhost:5173
+        working-directory: ./meduzzen_backend
+        run: pytest
