@@ -49,6 +49,7 @@ jobs:
       - name: Test
         env:
           DJANGO_SETTINGS_MODULE: meduzzen_backend.settings
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
         working-directory: ./meduzzen_backend
         run: |
           sleep 10
