@@ -40,8 +40,16 @@ jobs:
       - name: Lint
         run: ruff check .
 
+      - name: Set environment variables
+        run: |
+          echo "export POSTGRES_DB=${{ secrets.POSTGRES_DB }}" >> $GITHUB_ENV
+          echo "export POSTGRES_USER=${{ secrets.POSTGRES_USER }}" >> $GITHUB_ENV
+          echo "export POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> $GITHUB_ENV
+
       - name: Test
         env:
           DJANGO_SETTINGS_MODULE: meduzzen_backend.settings
         working-directory: ./meduzzen_backend
-        run: pytest
+        run: |
+          sleep 10
+          pytest
