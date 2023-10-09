@@ -5,14 +5,6 @@ on: push
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
-      POSTGRES_NAME: ${{ secrets.POSTGRES_NAME }}
-      POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-      POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
-      POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
-      DATABASE_ENGINE: postgresql
 
     services:
       postgres-db:
@@ -54,5 +46,7 @@ jobs:
       - name: Test
         env:
           DJANGO_SETTINGS_MODULE: meduzzen_backend.settings
+          DATABASE_NAME: test_db_postgres
+          DATABASE_ENGINE: postgresql
         working-directory: ./meduzzen_backend
         run: pytest
