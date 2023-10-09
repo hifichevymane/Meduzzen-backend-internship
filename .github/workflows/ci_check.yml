@@ -44,6 +44,5 @@ jobs:
         run: ruff check .
 
       - name: Test
-        run: pytest
-        env:
-          DJANGO_SETTINGS_MODULE: meduzzen_backend.settings
+        run: python manage.py test
+        working-directory: ./meduzzen_backend
