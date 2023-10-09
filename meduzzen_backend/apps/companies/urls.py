@@ -1,10 +1,11 @@
-from django.urls import path
+from django.urls import include, path
+from rest_framework import routers
 
 from . import views
 
+router = routers.DefaultRouter()
+router.register(r'companies', views.CompanyModelViewSet)
+
 urlpatterns = [
-    path('companies/', views.CompanyListAPIView.as_view(), name='companies_list'),
-    path('companies/', views.CompanyCreateAPIView.as_view(), name='companies_create'),
-    path('companies/<int:pk>/', views.CompanyRetrieveUpdateDestroyAPIView.as_view(),
-          name='companies_detail_update_delete')
+    path('', include(router.urls), name='companies')
 ]
