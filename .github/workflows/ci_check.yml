@@ -45,3 +45,5 @@ jobs:
 
       - name: Test
         run: pytest
+        env:
+          DJANGO_SETTINGS_MODULE: meduzzen_backend.settings
