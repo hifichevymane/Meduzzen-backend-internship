@@ -48,3 +48,4 @@ jobs:
         working-directory: ./meduzzen_backend
         env:
           SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+          FRONTEND_URL: http://localhost:5173
