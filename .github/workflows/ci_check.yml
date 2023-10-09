@@ -46,3 +46,5 @@ jobs:
       - name: Test
         run: python manage.py test
         working-directory: ./meduzzen_backend
+        env:
+          SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
