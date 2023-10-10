@@ -14,9 +14,9 @@ jobs:
           POSTGRES_NAME: ${{ secrets.POSTGRES_NAME }}
           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-          POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
+          POSTGRES_HOST: postgres
         ports:
-          - 5432/tcp
+          - 5432:5432
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -42,10 +42,11 @@ jobs:
         env:
           SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
           FRONTEND_URL: http://localhost:5173
-          POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
+          POSTGRES_HOST: postgres
           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          DB_PORT: ${{ job.services.postgres.ports[5432] }}
         run: |
           python ./meduzzen_backend/manage.py makemigrations
           python ./meduzzen_backend/manage.py migrate

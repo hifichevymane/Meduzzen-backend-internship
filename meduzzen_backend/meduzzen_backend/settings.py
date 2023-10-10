@@ -231,11 +231,11 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         # PostgreSQL db data
         # Getting all data from .env file
-        'NAME': os.environ.get('POSTGRES_DB'),
+        'NAME': os.environ.get('POSTGRES_DB', 'default'),
         'USER': os.environ.get('POSTGRES_USER'),
         'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
-        'HOST': os.environ.get('POSTGRES_HOST'),
-        'PORT': 5432,
+        'HOST': os.environ.get('DB_HOST', 'localhost'),
+        'PORT': os.environ.get('POSTGRES_PORT', 5432),
         'TEST': {
             'NAME': 'test'
         }
