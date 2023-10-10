@@ -40,6 +40,7 @@ jobs:
       - name: Run migrations
         env:
           SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+          FRONTEND_URL: http://localhost:5173
         run: |
           python ./meduzzen_backend/manage.py makemigrations
           python ./meduzzen_backend/manage.py migrate
