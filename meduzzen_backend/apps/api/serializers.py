@@ -26,3 +26,10 @@ class UserSerializer(serializers.ModelSerializer):
         user.save()
 
         return user
+
+
+# User Serializer for auth/users/me path
+class CurrentUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('email', 'username', 'first_name', 'last_name')
