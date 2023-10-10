@@ -43,8 +43,6 @@ jobs:
       - name: Test
         env:
           DJANGO_SETTINGS_MODULE: meduzzen_backend.settings
-          SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
-          FRONTEND_URL: http://localhost:5173
           POSTGRES_HOST: postgres
           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
@@ -52,5 +50,4 @@ jobs:
           DB_PORT: ${{ job.services.postgres.ports[5432] }}
         working-directory: ./meduzzen_backend
         run: |
-          sleep 10
           pytest -vv
