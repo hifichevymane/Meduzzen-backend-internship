@@ -6,35 +6,25 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    # services:
-    #   postgres-db:
-    #     image: postgres:latest
-    #     env:
-    #       POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
-    #       POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-    #       POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-    #       POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
-    #     options: >-
-    #       --health-cmd pg_isready
-    #       --health-interval 10s
-    #       --health-timeout 5s
-    #       --health-retries 5
-    #     ports:
-    #       # Maps tcp port 5432 on service container to the host
-    #       - 5432:5432
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_NAME: ${{ secrets.POSTGRES_NAME }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
+          POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
-
-      - name: Setup PostgreSQL db
-        uses: ikalnytskyi/action-setup-postgres@v4
-        with:
-          username: ${{ secrets.POSTGRES_NAME }}
-          password: ${{ secrets.POSTGRES_PASSWORD }}
-          database: test
-          port: ${{ secrets.POSTGRES_PORT }}
-        id: postgres
 
       - name: Setup python
         uses: actions/setup-python@v4
@@ -47,14 +37,18 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r ./meduzzen_backend/requirements.txt
 
+      - name: Run migrations
+        run: |
+          python ./meduzzen_backend/manage.py makemigrations
+          python ./meduzzen_backend/manage.py migrate
+
       - name: Lint
         run: ruff check .
 
       - name: Test
         env:
           DJANGO_SETTINGS_MODULE: meduzzen_backend.settings
-          CONNECTION_STR: ${{ steps.postgres.outputs.connection-uri }}
         working-directory: ./meduzzen_backend
         run: |
           sleep 10
-          pytest
+          pytest -vv
