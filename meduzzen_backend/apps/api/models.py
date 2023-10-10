@@ -23,3 +23,6 @@ class User(AbstractUser, TimeStampedModel):
 
     # Assing base user manager for admin panel
     objects = CustomUserManager()
+
+    USERNAME_FIELD = "username"
+    REQUIRED_FIELDS = ['email', 'first_name', 'last_name']

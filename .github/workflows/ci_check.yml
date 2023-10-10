@@ -1,0 +1,53 @@
+name: CI Python pull request/commit checking
+
+on: push
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_HOST: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+
+      - name: Setup python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11.3
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r ./meduzzen_backend/requirements.txt
+
+      - name: Lint
+        run: ruff check .
+
+      - name: Test
+        env:
+          DJANGO_SETTINGS_MODULE: meduzzen_backend.settings
+          POSTGRES_HOST: postgres
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          DB_PORT: ${{ job.services.postgres.ports[5432] }}
+        working-directory: ./meduzzen_backend
+        run: |
+          pytest -vv

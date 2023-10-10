@@ -1,7 +1,8 @@
 import pytest
 from django.contrib.auth import get_user_model
 from django.db.utils import IntegrityError
-from fixtures.user_model_fixtures import test_user_data  #noqa: F401
+
+from .fixtures.user_model_fixtures import test_user_data  #noqa: F401
 
 # # Get User model
 User = get_user_model()
