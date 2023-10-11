@@ -3,11 +3,12 @@ from rest_framework import serializers
 from companies.models import Company
 
 
-# Company create serializer
-class CompanyCreateSerializer(serializers.ModelSerializer):
+# Company serializer
+class CompanyModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = Company
-        fields = ('name', 'description')
+        fields = '__all__'
+        read_only_fields = ('id', 'owner', 'created_at', 'updated_at')
         extra_kwargs = {
             'name': {'required': True},
             'description': {'required': True}
@@ -19,10 +20,3 @@ class CompanyCreateSerializer(serializers.ModelSerializer):
 
         validated_data['owner'] = user
         return super().create(validated_data)
-
-
-# Company detail serializer
-class CompanyDetailSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Company
-        fields = '__all__'

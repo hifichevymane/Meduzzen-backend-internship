@@ -6,7 +6,7 @@ from rest_framework.viewsets import ModelViewSet
 from companies.models import Company
 from companies.permissions import IsOwner, IsStaff, IsSuperUser
 
-from .serializers import CompanyCreateSerializer, CompanyDetailSerializer
+from .serializers import CompanyModelSerializer
 
 
 # Pagination class for CompanyModelViewSet
@@ -20,17 +20,10 @@ class CompanyPagination(PageNumberPagination):
 # Company Model ViewSet
 class CompanyModelViewSet(ModelViewSet):
     queryset = Company.objects.all()
-    serializer_class = CompanyDetailSerializer
+    serializer_class = CompanyModelSerializer
     permission_classes = (IsAuthenticated, )
     pagination_class = CompanyPagination
 
-    # If action is create -> we use CompanyCreateSerializer
-    def get_serializer_class(self):
-        if self.action == 'create':
-            return CompanyCreateSerializer
-
-        return super(CompanyModelViewSet, self).get_serializer_class()
-    
     # Assign custom permission classes for PUT PATCH DELETE requests
     def get_permissions(self):
         if self.action in ['update', 'partial_update', 'destroy']:
