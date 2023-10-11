@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # Django apps
     'api.apps.ApiConfig',
+    'companies.apps.CompaniesConfig',
     # Installed packages
     'rest_framework',
     'corsheaders',
@@ -116,7 +117,7 @@ LOGGING = {
 REST_FRAMEWORK = {
     # Pagination settings
     'DEFAULT_PAGINATION_CLASS': 
-        'rest_framework.pagination.LimitOffsetPagination',
+        'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10,
 
     # JWT token auth
@@ -145,7 +146,7 @@ DJOSER = {
 # JWT Token auth settings
 SIMPLE_JWT = {
     "AUTH_HEADER_TYPES": ('JWT', 'Bearer'),
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
     "ROTATE_REFRESH_TOKENS": False,
     "BLACKLIST_AFTER_ROTATION": False,
@@ -236,10 +237,7 @@ DATABASES = {
         'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
         'HOST': os.environ.get('DB_HOST', 'localhost'),
         'PORT': os.environ.get('POSTGRES_PORT', 5432),
-        'TEST': {
-            'NAME': 'test'
-        }
-    },
+    }
 }
 
 # Adding Redis caching
