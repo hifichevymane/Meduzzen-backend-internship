@@ -20,6 +20,7 @@ class User(AbstractUser, TimeStampedModel):
     email = models.EmailField(unique=True, null=False, blank=False)
     first_name = models.CharField(max_length=30, blank=False, null=False)
     last_name = models.CharField(max_length=30, blank=False, null=False)
+    image_path = models.ImageField(upload_to='img', default='profile-pic.webp')
 
     # Assing base user manager for admin panel
     objects = CustomUserManager()
