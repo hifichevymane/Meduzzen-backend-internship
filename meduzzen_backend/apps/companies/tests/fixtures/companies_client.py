@@ -2,7 +2,7 @@
 import pytest
 
 from api.tests.fixtures.client import api_client, API_URL
-from companies.tests.fixtures.user_company_data import test_owner
+from users.tests.fixtures.users import test_owner
 
 @pytest.fixture
 def owner_api_client(api_client, test_owner):

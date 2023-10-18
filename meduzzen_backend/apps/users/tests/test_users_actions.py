@@ -2,17 +2,20 @@
 import pytest
 
 from api.tests.fixtures.client import api_client, API_URL
-from companies.tests.fixtures.user_company_data import (
-    test_company, 
+from companies.tests.fixtures.companies import (
+    test_company,
+    test_company_member,
+    test_company_invite)
+
+from users.tests.fixtures.users import (
     test_users, 
     test_owner, 
-    test_company_member, 
     test_user_request, 
-    test_company_invite)
+    test_invites_payloads)
 
 from .fixtures.user_client import user_api_client
 
-from companies.models import CompanyInvitations, CompanyMembers
+from companies.models import CompanyMembers
 from companies.models import CompanyInvitationStatus
 from users.models import UsersRequests, UsersRequestStatus
 
@@ -53,7 +56,8 @@ def test_send_request_to_company(user_api_client, test_company):
         'company': test_company.id,
     }
 
-    test_user_request = user_api_client.post(f'{API_URL}/users_requests/', test_user_request_data)
+    test_user_request = user_api_client.post(f'{API_URL}/users_requests/', 
+                                             test_user_request_data)
     
     assert test_user_request.status_code == 201
     assert UsersRequests.objects.get(pk=test_user_request.data['id'])

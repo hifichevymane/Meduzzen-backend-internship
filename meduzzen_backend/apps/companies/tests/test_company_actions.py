@@ -2,13 +2,14 @@
 import pytest
 
 from api.tests.fixtures.client import api_client, API_URL
-from .fixtures.user_company_data import (
-    test_owner, 
-    test_users, 
+from companies.tests.fixtures.companies import (
     test_company,
+    test_company_member)
+
+from users.tests.fixtures.users import (
+    test_users, 
+    test_owner, 
     test_user_request, 
-    test_company_invite, 
-    test_company_member,
     test_invites_payloads)
 
 from .fixtures.companies_client import owner_api_client
@@ -43,7 +44,7 @@ def test_send_invitation_to_the_user(owner_api_client, test_invites_payloads):
 
 # Test invite revoke
 @pytest.mark.django_db
-def test_revoke_invite(owner_api_client, test_company, test_users, test_invites_payloads):
+def test_revoke_invite(owner_api_client, test_invites_payloads):
     # Invite the user
     test_invite_user_payload = test_invites_payloads[0]
 
