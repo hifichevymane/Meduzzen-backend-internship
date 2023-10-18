@@ -1,7 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-from api.managers import CustomUserManager
+from .managers import CustomUserManager
 
 
 # Create your models here.
@@ -13,6 +13,7 @@ class TimeStampedModel(models.Model):
     class Meta:
         # abstract = True to enable models inherit from TimeStampedModel
         abstract = True
+
 
 # Custom User model
 class User(AbstractUser, TimeStampedModel):

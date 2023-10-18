@@ -1,7 +1,11 @@
+# ruff: noqa: F401 F811 I001 F403
 import pytest
 from django.contrib.auth import get_user_model
 
-from companies.models import Company
+from companies.models import Company, CompanyInvitations, CompanyMembers
+from users.models import UsersRequests
+
+from model_bakery import baker
 
 User = get_user_model()
 
@@ -70,3 +74,76 @@ def test_users():
     test_user3 = User.objects.create_user(**test_user_data3)
 
     return test_user1, test_user2, test_user3
+
+
+@pytest.fixture
+def test_company_invite(test_users, test_company):
+    test_user = test_users[0]
+
+    test_company_request_data = {
+        'company': test_company,
+        'user': test_user,
+    }
+
+    # Create a company request
+    company_request = CompanyInvitations.objects.create(**test_company_request_data)
+
+    return company_request
+
+
+@pytest.fixture
+def test_user_request(test_users, test_company):
+    test_user = test_users[0]
+
+    # User request body
+    test_user_request_data = {
+        'company': test_company,
+        'user': test_user,
+    }
+
+    # Create a user request
+    test_user_request = UsersRequests.objects.create(**test_user_request_data)
+
+    return test_user_request
+
+
+@pytest.fixture
+def test_company_member(test_users, test_company):
+    test_user = test_users[0]
+
+    test_company_member_data = {
+        'company': test_company,
+        'user': test_user
+    }
+
+    # Create a new company member
+    test_company_member = CompanyMembers.objects.create(**test_company_member_data)
+
+    return test_company_member
+
+
+@pytest.fixture
+def test_invites_payloads(test_users, test_company):
+    test_invited_user1, test_invited_user2, test_invited_user3 = test_users
+
+    # Invite the user to the company
+    test_invite_user1_payload = {
+        'user': test_invited_user1.id,
+        'company': test_company.id,
+    }
+
+    test_invite_user2_payload = {
+        'user': test_invited_user2.id,
+        'company': test_company.id,
+    }
+
+    test_invite_user3_payload = {
+        'user': test_invited_user3.id,
+        'company': test_company.id,
+    }
+
+    payloads = (test_invite_user1_payload, 
+                test_invite_user2_payload, 
+                test_invite_user3_payload)
+
+    return payloads

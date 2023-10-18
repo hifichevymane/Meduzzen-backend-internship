@@ -9,9 +9,9 @@ class CompanyAdmin(admin.ModelAdmin):
     list_filter = ('owner', 'name') # filtering
 
 
-class CompanyRequestsAdmin(admin.ModelAdmin):
+class CompanyInvitationsAdmin(admin.ModelAdmin):
     search_fields = ('company', 'user')
-    list_filter = ('company', 'user', 'status', 'request_type')
+    list_filter = ('company', 'user', 'status')
 
 
 class CompanyMembersAdmin(admin.ModelAdmin):
@@ -20,5 +20,5 @@ class CompanyMembersAdmin(admin.ModelAdmin):
 
 # Register your models here.
 admin.site.register(models.Company, CompanyAdmin)
-admin.site.register(models.CompanyRequests, CompanyRequestsAdmin)
+admin.site.register(models.CompanyInvitations, CompanyInvitationsAdmin)
 admin.site.register(models.CompanyMembers, CompanyMembersAdmin)

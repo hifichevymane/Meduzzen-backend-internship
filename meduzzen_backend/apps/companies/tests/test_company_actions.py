@@ -1,189 +1,104 @@
 # ruff: noqa: F401 F811 I001 F403
 import pytest
-from django.contrib.auth import get_user_model
 
-from .fixtures.client import api_client, API_URL
-from .fixtures.user_company_data import *
+from api.tests.fixtures.client import api_client, API_URL
+from .fixtures.user_company_data import (
+    test_owner, 
+    test_users, 
+    test_company,
+    test_user_request, 
+    test_company_invite, 
+    test_company_member,
+    test_invites_payloads)
 
-from companies.models import CompanyRequests, CompanyMembers
+from .fixtures.companies_client import owner_api_client
 
-User = get_user_model()
+from companies.models import CompanyMembers, CompanyInvitationStatus, CompanyInvitations
+from users.models import UsersRequestStatus
 
 # Test send invite
 @pytest.mark.django_db
-def test_send_invitation_to_the_user(api_client, test_company, test_owner, test_users):
-    test_owner_login_data = {
-        'username': test_owner.username,
-        'password': 'DeathGrips228',
-    }
-
-    # JWT auth
-    auth_response = api_client.post(f'{API_URL}/auth/jwt/create/', test_owner_login_data)
-    api_client.credentials(HTTP_AUTHORIZATION='Bearer ' + auth_response.data['access'])
-
-    # Several users to invite
-    test_invited_user1, test_invited_user2, test_invited_user3 = test_users
-
+def test_send_invitation_to_the_user(owner_api_client, test_invites_payloads):
     # Invite the user to the company
-    test_invite_user1_payload = {
-        'user': test_invited_user1.id,
-        'company': test_company.id,
-        'request_type': 'company to user'
-    }
+    test_invite_payload1, test_invite_payload2, test_invite_payload3 = test_invites_payloads
 
-    test_invite_user2_payload = {
-        'user': test_invited_user2.id,
-        'company': test_company.id,
-        'request_type': 'company to user'
-    }
-
-    test_invite_user3_payload = {
-        'user': test_invited_user3.id,
-        'company': test_company.id,
-        'request_type': 'company to user'
-    }
-
-    response_test_invite1 = api_client.post(f'{API_URL}/company_requests/', 
-                                            test_invite_user1_payload)
-    assert response_test_invite1.status_code == 201
-
-    response_test_invite2 = api_client.post(f'{API_URL}/company_requests/', 
-                                            test_invite_user2_payload)
-    assert response_test_invite2.status_code == 201
+    response_test_invite1 = owner_api_client.post(f'{API_URL}/company_invites/', 
+                                                  test_invite_payload1)
     
-    response_test_invite3 = api_client.post(f'{API_URL}/company_requests/', 
-                                            test_invite_user3_payload)
+    assert response_test_invite1.status_code == 201
+    assert CompanyInvitations.objects.get(pk=response_test_invite1.data['id'])
+
+    response_test_invite2 = owner_api_client.post(f'{API_URL}/company_invites/', 
+                                                  test_invite_payload2)
+    
+    assert response_test_invite2.status_code == 201
+    assert CompanyInvitations.objects.get(pk=response_test_invite2.data['id'])
+    
+    response_test_invite3 = owner_api_client.post(f'{API_URL}/company_invites/', 
+                                                  test_invite_payload3)
+    
     assert response_test_invite3.status_code == 201
+    assert CompanyInvitations.objects.get(pk=response_test_invite3.data['id'])
 
 
 # Test invite revoke
 @pytest.mark.django_db
-def test_revoke_invite(api_client, test_company, test_owner, test_users):
-    test_owner_login_data = {
-        'username': test_owner.username,
-        'password': 'DeathGrips228',
-    }
-
-    # JWT auth
-    auth_response = api_client.post(f'{API_URL}/auth/jwt/create/', test_owner_login_data)
-    api_client.credentials(HTTP_AUTHORIZATION='Bearer ' + auth_response.data['access'])
-
-    # Test user
-    test_invited_user = test_users[0]
-
+def test_revoke_invite(owner_api_client, test_company, test_users, test_invites_payloads):
     # Invite the user
-    test_invite_user_payload = {
-        'user': test_invited_user.id,
-        'company': test_company.id,
-        'request_type': 'company to user'
-    }
+    test_invite_user_payload = test_invites_payloads[0]
 
-    response_invite = api_client.post(f'{API_URL}/company_requests/', test_invite_user_payload)
+    response_invite = owner_api_client.post(f'{API_URL}/company_invites/', 
+                                                test_invite_user_payload)
     assert response_invite.status_code == 201
     invite_id = response_invite.data['id']
 
-    # Revoke the invite
-    response_revoke = api_client.delete(f'{API_URL}/company_requests/{invite_id}/')
-    assert response_revoke.status_code == 204
+    test_revoke_request_payload = {
+        'status': CompanyInvitationStatus.REVOKED.value
+    }
+
+    response_revoke = owner_api_client.patch(f'{API_URL}/company_invites/{invite_id}/',
+                                             test_revoke_request_payload)
+    
+    assert response_revoke.status_code == 200
+    assert response_revoke.data['status'] == CompanyInvitationStatus.REVOKED.value
 
 
 # Test Owner approving request to the company
 @pytest.mark.django_db
-def test_approve_request(api_client, test_company, test_owner, test_users):
-    test_owner_login_data = {
-        'username': test_owner.username,
-        'password': 'DeathGrips228',
-    }
-
-    # JWT auth
-    auth_response = api_client.post(f'{API_URL}/auth/jwt/create/', test_owner_login_data)
-    api_client.credentials(HTTP_AUTHORIZATION='Bearer ' + auth_response.data['access'])
-
-    # Test user
-    test_user = test_users[0]
-
-    # User request body
-    test_user_request_data = {
-        'company': test_company,
-        'user': test_user,
-        'request_type': 'user to company',
-    }
-
-    # Create a user request
-    test_user_request = CompanyRequests.objects.create(**test_user_request_data)
-    assert test_user_request
-
+def test_approve_request(owner_api_client, test_user_request):
     # Test approve request
     test_approve_request_data = {
-        'status': 'approved'
+        'status': UsersRequestStatus.ACCEPTED.value
     }
 
-    test_approve_request = api_client.patch(f'{API_URL}/users_requests/{test_user_request.id}/',
-                                            **test_approve_request_data)
-    # Check if the request is successful
+    test_approve_request = owner_api_client.patch(f'{API_URL}/users_requests/{test_user_request.id}/',
+                                                  test_approve_request_data)
+
     assert test_approve_request.status_code == 200
+    assert test_approve_request.data['status'] == UsersRequestStatus.ACCEPTED.value
 
 
-# Test Owner approving request to the company
+# Test Owner declining request to the company
 @pytest.mark.django_db
-def test_reject_request(api_client, test_company, test_owner, test_users):
-    test_owner_login_data = {
-        'username': test_owner.username,
-        'password': 'DeathGrips228',
-    }
-
-    # JWT auth
-    auth_response = api_client.post(f'{API_URL}/auth/jwt/create/', test_owner_login_data)
-    api_client.credentials(HTTP_AUTHORIZATION='Bearer ' + auth_response.data['access'])
-
-    # Test user
-    test_user = test_users[0]
-
-    # User request body
-    test_user_request_data = {
-        'company': test_company,
-        'user': test_user,
-        'request_type': 'user to company',
-    }
-
-    # Create a user request
-    test_user_request = CompanyRequests.objects.create(**test_user_request_data)
-    assert test_user_request
-
+def test_reject_request(owner_api_client, test_user_request):
     # Test reject request
     test_approve_request_data = {
-        'status': 'rejected'
+        'status': UsersRequestStatus.REJECTED.value
     }
 
-    test_approve_request = api_client.patch(f'{API_URL}/users_requests/{test_user_request.id}/',
-                                            **test_approve_request_data)
-    # Check if the request is successful
+    test_approve_request = owner_api_client.patch(f'{API_URL}/users_requests/{test_user_request.id}/',
+                                                  test_approve_request_data)
+
     assert test_approve_request.status_code == 200
+    assert test_approve_request.data['status'] == UsersRequestStatus.REJECTED.value
 
 
 # Test remove user from company
 @pytest.mark.django_db
-def test_remove_users_from_company(api_client, test_owner, test_company, test_users):
-    test_owner_login_data = {
-        'username': test_owner.username,
-        'password': 'DeathGrips228',
-    }
-
-    # JWT auth
-    auth_response = api_client.post(f'{API_URL}/auth/jwt/create/', test_owner_login_data)
-    api_client.credentials(HTTP_AUTHORIZATION='Bearer ' + auth_response.data['access'])
-
-    # Test company member
-    test_user = test_users[0]
-
-    test_company_member_data = {
-        'company': test_company,
-        'user': test_user
-    }
-
-    # Create new member
-    test_company_member = CompanyMembers.objects.create(**test_company_member_data)
-
+def test_remove_users_from_company(owner_api_client, test_company_member):
     # Remove user from company and check if request is successful
-    remove_user_request = api_client.delete(f'{API_URL}/company_members/{test_company_member.id}/')
+    remove_user_request = owner_api_client.delete(f'{API_URL}/company_members/{test_company_member.id}/')
+    
     assert remove_user_request.status_code == 204
+    with pytest.raises(CompanyMembers.DoesNotExist): 
+        CompanyMembers.objects.get(pk=test_company_member.id)

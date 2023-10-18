@@ -1,13 +1,15 @@
 import logging
 
+from django.contrib.auth import get_user_model
 from rest_framework.decorators import api_view
 from rest_framework.filters import OrderingFilter
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
-from api.models import User
-from api.serializers import UserSerializer
+from .serializers import UserSerializer
+
+User = get_user_model()
 
 # Create a logger
 test_logger = logging.getLogger('main')
@@ -30,4 +32,4 @@ class UserModelViewSet(ModelViewSet):
 
     # Ordering by 'created_at' field
     filter_backends = (OrderingFilter, )
-    ordering = ('created_at', ) 
+    ordering = ('created_at', )

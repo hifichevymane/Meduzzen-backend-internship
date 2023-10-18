@@ -1,7 +1,7 @@
+from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
-from api.models import User
-
+User = get_user_model()
 
 # User serializer
 class UserSerializer(serializers.ModelSerializer):

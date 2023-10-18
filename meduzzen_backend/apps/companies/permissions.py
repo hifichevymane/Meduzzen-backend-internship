@@ -37,25 +37,24 @@ class IsOwner(BasePermission):
 class IsUsersCompany(BasePermission):
     def has_permission(self, request, view):
         if view.action in ['create', 'destroy', 'update', 'partial_update']:
-            company_id = request.data.get('company')  # Adjust the field name accordingly
+            company_id = request.data.get('company')
             if company_id is not None:
                 try:
                     company = Company.objects.get(id=company_id)
                     return company.owner == request.user
                 except Company.DoesNotExist:
-                    return False  # Return False if the company doesn't exist
+                    return False
                 
-        else: # Get company id param from url for retrieve actions
+        elif view.action:
             company_id = view.kwargs.get('pk')
             if company_id is not None:
                 try:
-                    # If current user is the owner of the company with id = pk
                     company = Company.objects.get(id=company_id)
                     return company.owner == request.user
                 except Company.DoesNotExist:
                     return False
 
-        return True  # For other actions, permission is granted
+        return True
     
     def has_object_permission(self, request, view, obj):        
         return obj.company.owner == request.user
@@ -64,13 +63,13 @@ class IsUsersCompany(BasePermission):
 class IsInvitedUser(BasePermission):
     def has_permission(self, request, view):
         if view.action in ['create', 'destroy', 'update', 'partial_update']:
-            user_id = request.data.get('user')  # Adjust the field name accordingly
+            user_id = request.data.get('user')
             if user_id is not None:
                 try:
                     return user_id == request.user.id
                 except User.DoesNotExist:
-                    return False  # Return False if the user doesn't exist
-        return True  # For other actions, permission is granted
+                    return False  
+        return True  
     
     def has_object_permission(self, request, view, obj):        
         return obj.user == request.user

@@ -1,3 +1,5 @@
+from enum import Enum
+
 from api.models import TimeStampedModel
 from django.contrib.auth import get_user_model
 from django.db import models
@@ -5,23 +7,26 @@ from django.db import models
 # User model
 User = get_user_model()
 
-# Status choices for CompanyRequests and UsersRequests models
-class Status(models.TextChoices):
+# Status choices for CompanyInvitations model
+class CompanyInvitationStatus(Enum):
     PENDING = 'pending'
     ACCEPTED = 'accepted'
-    REJECTED = 'rejected'
+    DECLINED = 'declined'
+    REVOKED = 'revoked'
+
+    @classmethod
+    def choices(cls):
+        return [(key.value, key.name) for key in cls]
 
 
 # Visibility choices 
-class Visibility(models.TextChoices):
+class Visibility(Enum):
     VISIBLE = 'visible'
     HIDDEN = 'hidden'
 
-
-# Request type choices
-class RequestType(models.TextChoices):
-    COMPANY_TO_USER = 'company to user'
-    USER_TO_COMPANY = 'user to company'
+    @classmethod
+    def choices(cls):
+        return [(key.value, key.name) for key in cls]
 
 
 # Create your models here.
@@ -30,8 +35,8 @@ class Company(TimeStampedModel):
     name = models.CharField(max_length=50, blank=False, null=False, unique=True)
     description = models.TextField(blank=False, null=False)
     visibility = models.CharField(max_length=15, 
-                                  choices=Visibility.choices, 
-                                  default=Visibility.VISIBLE)
+                                  choices=Visibility.choices(), 
+                                  default=Visibility.VISIBLE.value)
 
     class Meta:
         verbose_name = "Company"
@@ -42,23 +47,19 @@ class Company(TimeStampedModel):
 
 
 # All company requests to the users
-class CompanyRequests(TimeStampedModel):
+class CompanyInvitations(TimeStampedModel):
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     # Company can't invite one user several times
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    status = models.CharField(default=Status.PENDING, choices=Status.choices)
-    # Determine if it's user's request to the company or company's request
-    request_type = models.CharField(blank=False, null=False, choices=RequestType.choices)
+    status = models.CharField(default=CompanyInvitationStatus.PENDING.value, 
+                              choices=CompanyInvitationStatus.choices())
 
     class Meta:
-        verbose_name = "Company Request"
-        verbose_name_plural = 'Company Requests' # Plural naming
+        verbose_name = "Company Invitation"
+        verbose_name_plural = 'Company Invitations' # Plural naming
 
     def __str__(self):
-        if self.request_type == RequestType.COMPANY_TO_USER:
-            return f"{self.company} -> {self.user} - {self.status}"
-        else:
-            return f"{self.user} -> {self.company} - {self.status}"
+        return f"{self.company} -> {self.user} - {self.status}"
 
 
 # Company members
