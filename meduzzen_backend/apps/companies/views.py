@@ -5,8 +5,17 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
-from companies import permissions
 from companies.models import Company, CompanyInvitations, CompanyMembers, Visibility
+from companies.permissions import (
+    DoesOwnerSendInviteToItself,
+    HasOwnerNotSentInviteYet,
+    IsInvitedUser,
+    IsOwner,
+    IsStaff,
+    IsSuperUser,
+    IsUserNotCompanyMember,
+    IsUsersCompany,
+)
 from companies.serializers import (
     CompanyInvitationsModelSerializer,
     CompanyMembersModelSerializer,
@@ -32,9 +41,9 @@ class CompanyModelViewSet(ModelViewSet):
     # Assign custom permission classes for PUT PATCH DELETE requests
     def get_permissions(self):
         if self.action in ['update', 'partial_update', 'destroy']:
-            self.permission_classes = [permissions.IsSuperUser | 
-                                       permissions.IsOwner | 
-                                       permissions.IsStaff ]
+            self.permission_classes = [IsSuperUser | 
+                                       IsOwner | 
+                                       IsStaff ]
         return super().get_permissions()
 
     # Override list method to list only visible companies
@@ -55,11 +64,16 @@ class CompanyInvitationsModelViewSet(ModelViewSet):
 
     # If user is able to edit a request
     def get_permissions(self):
-        if self.action in ['create', 'destroy']:
-            self.permission_classes = (permissions.IsUsersCompany, )
+        if self.action in ['destroy']:
+            self.permission_classes = (IsUsersCompany, )
+        elif self.action == 'create':
+            self.permission_classes = (IsUsersCompany, 
+                                       IsUserNotCompanyMember,
+                                       HasOwnerNotSentInviteYet,
+                                       DoesOwnerSendInviteToItself )
         elif self.action in ['update', 'partial_update']:
-            self.permission_classes = [permissions.IsUsersCompany | 
-                                       permissions.IsInvitedUser]
+            self.permission_classes = [IsUsersCompany | 
+                                       IsInvitedUser]
         return super().get_permissions()
     
     # Get current user's list of invitations to companies
@@ -76,7 +90,7 @@ class CompanyInvitationsModelViewSet(ModelViewSet):
     
     # Get company list of invited users by id
     @action(detail=True, url_path='invited_users', methods=['get'],
-            permission_classes=(permissions.IsUsersCompany, ))
+            permission_classes=(IsUsersCompany, ))
     def get_my_invited_users(self, request, pk=None):
         queryset = CompanyInvitations.objects.filter(company=pk)
         if not queryset:
@@ -96,10 +110,10 @@ class CompanyMembersModelViewSet(ModelViewSet):
     # If user is able to edit company members list
     def get_permissions(self):
         if self.action in ['create', 'update', 'partial_update']:
-            self.permission_classes = (permissions.IsUsersCompany, )
+            self.permission_classes = (IsUsersCompany, )
         elif self.action == 'destroy':
-            self.permission_classes = [permissions.IsUsersCompany | 
-                                       permissions.IsInvitedUser]
+            self.permission_classes = [IsUsersCompany | 
+                                       IsInvitedUser]
         return super().get_permissions()
 
     # Get all companies members list by company_id /company_members/id/members_list/

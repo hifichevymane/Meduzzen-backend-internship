@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import StrEnum, auto
 
 from api.models import TimeStampedModel
 from companies.models import Company
@@ -8,11 +8,11 @@ from django.db import models
 User = get_user_model()
 
 # Status choices for UsersRequests models
-class UsersRequestStatus(Enum):
-    PENDING = 'pending'
-    ACCEPTED = 'accepted'
-    REJECTED = 'rejected'
-    REVOKED = 'revoked'
+class UsersRequestStatus(StrEnum):
+    PENDING = auto()
+    ACCEPTED = auto()
+    REJECTED = auto()
+    CANCELED = auto()
 
     @classmethod
     def choices(cls):

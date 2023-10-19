@@ -4,7 +4,8 @@ import pytest
 from api.tests.fixtures.client import api_client, API_URL
 from companies.tests.fixtures.companies import (
     test_company,
-    test_company_member)
+    test_company_member,
+    test_company_invite)
 
 from users.tests.fixtures.users import (
     test_users, 
@@ -103,3 +104,29 @@ def test_remove_users_from_company(owner_api_client, test_company_member):
     assert remove_user_request.status_code == 204
     with pytest.raises(CompanyMembers.DoesNotExist): 
         CompanyMembers.objects.get(pk=test_company_member.id)
+
+
+@pytest.mark.django_db
+def test_send_invite_to_company_member(owner_api_client, test_company_member, test_invites_payloads):
+    test_invite_payload = test_invites_payloads[0]
+    test_invite_to_company_member = owner_api_client.post(f'{API_URL}/company_invites/', test_invite_payload)
+
+    assert test_invite_to_company_member.status_code == 403
+
+
+@pytest.mark.django_db
+def test_send_invite_twice(owner_api_client, test_company_invite, test_invites_payloads):
+    invite_payload = test_invites_payloads[0]
+
+    request = owner_api_client.post(f'{API_URL}/company_invites/', invite_payload)
+    assert request.status_code == 403
+
+
+@pytest.mark.django_db
+def test_owner_send_request_to_his_company(owner_api_client, test_company):
+    request_payload = {
+        'company': test_company.id
+    }
+
+    request = owner_api_client.post(f'{API_URL}/users_requests/', request_payload)
+    assert request.status_code == 403

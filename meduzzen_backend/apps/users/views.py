@@ -1,4 +1,4 @@
-from companies import permissions
+from companies.permissions import IsInvitedUser, IsUserNotCompanyMember, IsUsersCompany
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from users.models import UsersRequests
+from users.permissions import DoesUserSendRequestToHisCompany, HasUserNotSentRequestYet
 from users.serializers import UsersRequestsSerializer
 
 
@@ -18,11 +19,16 @@ class UsersRequestsModelViewSet(ModelViewSet):
 
     # If user is able to edit a request
     def get_permissions(self):
-        if self.action in ['destroy', 'create']:
-            self.permission_classes = (permissions.IsInvitedUser, )
+        if self.action in ['destroy']:
+            self.permission_classes = (IsInvitedUser, )
+        elif self.action == 'create':
+            self.permission_classes = (IsInvitedUser,
+                                       IsUserNotCompanyMember,
+                                       HasUserNotSentRequestYet,
+                                       DoesUserSendRequestToHisCompany)
         elif self.action in ['update', 'partial_update']:
-            self.permission_classes = [permissions.IsInvitedUser | 
-                                       permissions.IsUsersCompany ]
+            self.permission_classes = [IsInvitedUser | 
+                                       IsUsersCompany ]
         return super().get_permissions()
     
     # Get current user list of requests to companies
@@ -37,7 +43,7 @@ class UsersRequestsModelViewSet(ModelViewSet):
     
     # Get all company join requests from users
     @action(detail=True, url_path='join_requests', 
-            methods=['get'], permission_classes=(permissions.IsUsersCompany, ))
+            methods=['get'], permission_classes=(IsUsersCompany, ))
     def get_company_join_requests(self, request, pk=None):
         queryset = UsersRequests.objects.filter(company=pk)
         if not queryset:

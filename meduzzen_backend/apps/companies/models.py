@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import StrEnum, auto
 
 from api.models import TimeStampedModel
 from django.contrib.auth import get_user_model
@@ -8,11 +8,11 @@ from django.db import models
 User = get_user_model()
 
 # Status choices for CompanyInvitations model
-class CompanyInvitationStatus(Enum):
-    PENDING = 'pending'
-    ACCEPTED = 'accepted'
-    DECLINED = 'declined'
-    REVOKED = 'revoked'
+class CompanyInvitationStatus(StrEnum):
+    PENDING = auto()
+    ACCEPTED = auto()
+    DECLINED = auto()
+    REVOKED = auto()
 
     @classmethod
     def choices(cls):
@@ -20,9 +20,9 @@ class CompanyInvitationStatus(Enum):
 
 
 # Visibility choices 
-class Visibility(Enum):
-    VISIBLE = 'visible'
-    HIDDEN = 'hidden'
+class Visibility(StrEnum):
+    VISIBLE = auto()
+    HIDDEN = auto()
 
     @classmethod
     def choices(cls):

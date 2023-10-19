@@ -67,14 +67,14 @@ def test_send_request_to_company(user_api_client, test_company):
 @pytest.mark.django_db
 def test_revoke_request_to_company(user_api_client, test_user_request):
     test_revoke_request_data = {
-        'status': UsersRequestStatus.REVOKED.value
+        'status': UsersRequestStatus.CANCELED.value
     }
 
     request_id = test_user_request.id
 
     test_revoke_request = user_api_client.patch(f'{API_URL}/users_requests/{request_id}/',
                                                 test_revoke_request_data)
-    assert test_revoke_request.data['status'] == UsersRequestStatus.REVOKED.value
+    assert test_revoke_request.data['status'] == UsersRequestStatus.CANCELED.value
     assert test_revoke_request.status_code == 200
 
 
@@ -86,3 +86,32 @@ def test_leave_company(user_api_client, test_company_member):
     assert leave_company_request.status_code == 204
     with pytest.raises(CompanyMembers.DoesNotExist):
         CompanyMembers.objects.get(pk=test_company_member.id)
+
+
+# Test sending invites to company from not owner
+@pytest.mark.django_db
+def test_send_invite_from_not_owner(user_api_client, test_company, test_invites_payloads):
+    test_invite_payload = test_invites_payloads[1]
+
+    test_invite_request = user_api_client.post(f'{API_URL}/company_invites/', test_invite_payload)
+    assert test_invite_request.status_code == 403
+
+
+@pytest.mark.django_db
+def test_send_request_from_company_member(user_api_client, test_company, test_company_member):
+    user_request_payload = {
+        'company': test_company.id
+    }
+
+    request = user_api_client.post(f'{API_URL}/users_requests/', user_request_payload)
+    assert request.status_code == 403
+
+
+@pytest.mark.django_db
+def test_send_request_twice(user_api_client, test_user_request, test_company):
+    request_payload = {
+        'company': test_company.id
+    }
+
+    request = user_api_client.post(f'{API_URL}/users_requests/', request_payload)
+    assert request.status_code == 403

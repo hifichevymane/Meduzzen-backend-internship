@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework.permissions import BasePermission
 
-from companies.models import Company
+from companies.models import Company, CompanyInvitations, CompanyMembers
 
 User = get_user_model()
 
@@ -73,3 +73,35 @@ class IsInvitedUser(BasePermission):
     
     def has_object_permission(self, request, view, obj):        
         return obj.user == request.user
+
+
+class IsUserNotCompanyMember(BasePermission):
+    def has_permission(self, request, view):
+        if view.action == 'create':
+            user = request.data.get('user')
+            if not user: # Get user from request.user
+                user = request.user
+
+            company = request.data.get('company')
+            return not CompanyMembers.objects.filter(company=company, user=user).exists()
+        return False
+
+
+# Check if Owner has already sent invite
+class HasOwnerNotSentInviteYet(BasePermission):
+    def has_permission(self, request, view):
+        if view.action == 'create':
+            company = request.data.get('company')
+            user = request.data.get('user')
+            # Return true if owner has not already sent invite
+            return not CompanyInvitations.objects.filter(company=company, user=user).exists()
+        return False
+
+
+class DoesOwnerSendInviteToItself(BasePermission):
+    def has_permission(self, request, view):
+        if view.action == 'create':
+            owner = request.user
+            user = request.data.get('user')
+            return owner.id != user
+        return False
