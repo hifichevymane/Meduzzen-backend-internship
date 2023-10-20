@@ -11,6 +11,7 @@ urlpatterns = [
     path('', views.health_check, name='health_check'),
     path('', include('companies.urls'), name='companies'),
     path('', include('users.urls'), name='users'),
+    path('', include('quizzes.urls'), name='quizzes'),
     path('', include(router.urls)),
     # Djoser auth pathes
     path('auth/', include('djoser.urls')),
