@@ -63,19 +63,18 @@ def test_send_request_to_company(user_api_client, test_company):
     assert UsersRequests.objects.get(pk=test_user_request.data['id'])
 
 
-# Test revoke user request to the company
 @pytest.mark.django_db
-def test_revoke_request_to_company(user_api_client, test_user_request):
-    test_revoke_request_data = {
+def test_cancel_request_to_company(user_api_client, test_user_request):
+    test_cancel_request_data = {
         'status': UsersRequestStatus.CANCELED.value
     }
 
     request_id = test_user_request.id
 
-    test_revoke_request = user_api_client.patch(f'{API_URL}/users_requests/{request_id}/',
-                                                test_revoke_request_data)
-    assert test_revoke_request.data['status'] == UsersRequestStatus.CANCELED.value
-    assert test_revoke_request.status_code == 200
+    test_cancel_request = user_api_client.patch(f'{API_URL}/users_requests/{request_id}/',
+                                                test_cancel_request_data)
+    assert test_cancel_request.data['status'] == UsersRequestStatus.CANCELED.value
+    assert test_cancel_request.status_code == 200
 
 
 # Test user leave the company
