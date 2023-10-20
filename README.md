@@ -34,7 +34,7 @@ docker-compose up -d
 2. Run this command in terminal:
 
 ```sh
-docker exec -it <django-container-id> python manage.py test
+docker exec -it django pytest -vv
 ```
 
 ## How to start the project not using Docker
@@ -82,11 +82,13 @@ python manage.py runserver
 
 ## How to run tests not using Docker
 
+> WARNING! YOU NEED TO ADD ENV DJANGO_SETTINGS_MODULE=meduzzen_backend.settings
+
 1. Go to `/meduzzen_backend` directory:
    ```sh
    cd /meduzzen_backend
    ```
 2. Run this command in a terminal:
    ```sh
-   python manage.py test
+   pytest
    ```

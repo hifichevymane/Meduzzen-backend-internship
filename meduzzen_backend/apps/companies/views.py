@@ -5,7 +5,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
-from companies.models import Company, CompanyInvitations, CompanyMembers, Visibility
+from companies.enums import CompanyMemberRole, Visibility
+from companies.models import Company, CompanyInvitations, CompanyMembers
 from companies.permissions import (
     DoesOwnerSendInviteToItself,
     HasOwnerNotSentInviteYet,
@@ -118,9 +119,21 @@ class CompanyMembersModelViewSet(ModelViewSet):
 
     # Get all companies members list by company_id /company_members/id/members_list/
     @action(detail=True, url_path='members_list', methods=['get'])
-    def company(self, request, pk=None):
+    def company_members_list(self, request, pk=None):
         queryset = CompanyMembers.objects.filter(company=pk)
 
+        if not queryset:
+            return Response({'detail': "Not found"}, status.HTTP_404_NOT_FOUND)
+        else:
+            serializer = self.serializer_class(queryset, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    # Get all company admin list by company_id
+    @action(detail=True, url_path='admin_list', methods=['get'])
+    def company_admin_list(self, request, pk=None):
+        queryset = CompanyMembers.objects.filter(company=pk, 
+                                                 role=CompanyMemberRole.ADMIN.value)
+        
         if not queryset:
             return Response({'detail': "Not found"}, status.HTTP_404_NOT_FOUND)
         else:
