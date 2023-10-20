@@ -26,7 +26,7 @@ class Visibility(StrEnum):
 # Company member role in Company
 class CompanyMemberRole(StrEnum):
     ADMIN = auto()
-    COMMON = auto()
+    MEMBER = auto()
 
     @classmethod
     def choices(cls):

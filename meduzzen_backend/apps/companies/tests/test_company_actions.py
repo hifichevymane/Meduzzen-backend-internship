@@ -133,7 +133,7 @@ def test_owner_send_request_to_his_company(owner_api_client, test_company):
     assert request.status_code == 403
 
 # Test apointing admin role and removing this role
-@pytest.mark.parametrize("role", [CompanyMemberRole.ADMIN.value, CompanyMemberRole.COMMON.value])
+@pytest.mark.parametrize("role", [CompanyMemberRole.ADMIN.value, CompanyMemberRole.MEMBER.value])
 @pytest.mark.django_db
 def test_appoint_remove_admin_role(role, owner_api_client, test_company_member):
     request_payload = {

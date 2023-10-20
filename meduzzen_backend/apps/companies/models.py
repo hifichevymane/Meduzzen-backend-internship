@@ -45,7 +45,7 @@ class CompanyMembers(TimeStampedModel):
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     # User can't be in multiple companies
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    role = models.CharField(default=CompanyMemberRole.COMMON.value,
+    role = models.CharField(default=CompanyMemberRole.MEMBER.value,
                             choices=CompanyMemberRole.choices())
 
     class Meta:
