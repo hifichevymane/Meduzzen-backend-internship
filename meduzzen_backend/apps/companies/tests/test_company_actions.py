@@ -15,8 +15,9 @@ from users.tests.fixtures.users import (
 
 from .fixtures.companies_client import owner_api_client
 
-from companies.models import CompanyMembers, CompanyInvitationStatus, CompanyInvitations
-from users.models import UsersRequestStatus
+from companies.models import CompanyMembers, CompanyInvitations
+from companies.enums import CompanyInvitationStatus, CompanyMemberRole
+from users.enums import UsersRequestStatus
 
 # Test send invite
 @pytest.mark.django_db
@@ -130,3 +131,19 @@ def test_owner_send_request_to_his_company(owner_api_client, test_company):
 
     request = owner_api_client.post(f'{API_URL}/users_requests/', request_payload)
     assert request.status_code == 403
+
+# Test apointing admin role and removing this role
+@pytest.mark.parametrize("role", [CompanyMemberRole.ADMIN.value, CompanyMemberRole.MEMBER.value])
+@pytest.mark.django_db
+def test_appoint_remove_admin_role(role, owner_api_client, test_company_member):
+    request_payload = {
+        'role': role
+    }
+
+    member_id = test_company_member.id
+
+    request = owner_api_client.patch(f'{API_URL}/company_members/{member_id}/',
+                                     request_payload)
+    
+    assert request.status_code == 200
+    assert request.data['role'] == role

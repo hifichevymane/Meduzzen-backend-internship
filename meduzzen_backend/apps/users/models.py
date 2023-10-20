@@ -1,22 +1,11 @@
-from enum import StrEnum, auto
-
 from api.models import TimeStampedModel
 from companies.models import Company
 from django.contrib.auth import get_user_model
 from django.db import models
 
+from .enums import UsersRequestStatus
+
 User = get_user_model()
-
-# Status choices for UsersRequests models
-class UsersRequestStatus(StrEnum):
-    PENDING = auto()
-    ACCEPTED = auto()
-    REJECTED = auto()
-    CANCELED = auto()
-
-    @classmethod
-    def choices(cls):
-        return [(key.value, key.name) for key in cls]
 
 
 # Create your models here.

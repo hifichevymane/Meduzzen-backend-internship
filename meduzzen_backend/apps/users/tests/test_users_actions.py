@@ -16,8 +16,9 @@ from users.tests.fixtures.users import (
 from .fixtures.user_client import user_api_client
 
 from companies.models import CompanyMembers
-from companies.models import CompanyInvitationStatus
-from users.models import UsersRequests, UsersRequestStatus
+from companies.enums import CompanyInvitationStatus, CompanyMemberRole
+from users.models import UsersRequests
+from users.enums import UsersRequestStatus
 
 # Test user accept invite from company
 @pytest.mark.django_db

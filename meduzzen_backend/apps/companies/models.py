@@ -1,33 +1,11 @@
-from enum import StrEnum, auto
-
 from api.models import TimeStampedModel
 from django.contrib.auth import get_user_model
 from django.db import models
 
+from .enums import CompanyInvitationStatus, CompanyMemberRole, Visibility
+
 # User model
 User = get_user_model()
-
-# Status choices for CompanyInvitations model
-class CompanyInvitationStatus(StrEnum):
-    PENDING = auto()
-    ACCEPTED = auto()
-    DECLINED = auto()
-    REVOKED = auto()
-
-    @classmethod
-    def choices(cls):
-        return [(key.value, key.name) for key in cls]
-
-
-# Visibility choices 
-class Visibility(StrEnum):
-    VISIBLE = auto()
-    HIDDEN = auto()
-
-    @classmethod
-    def choices(cls):
-        return [(key.value, key.name) for key in cls]
-
 
 # Create your models here.
 class Company(TimeStampedModel):
@@ -67,6 +45,8 @@ class CompanyMembers(TimeStampedModel):
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     # User can't be in multiple companies
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+    role = models.CharField(default=CompanyMemberRole.MEMBER.value,
+                            choices=CompanyMemberRole.choices())
 
     class Meta:
         verbose_name = "Company Member"
