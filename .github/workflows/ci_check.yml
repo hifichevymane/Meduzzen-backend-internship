@@ -22,6 +22,14 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
+      redis:
+        image: redis
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
@@ -43,11 +51,14 @@ jobs:
       - name: Test
         env:
           DJANGO_SETTINGS_MODULE: meduzzen_backend.settings
+          SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
           POSTGRES_HOST: postgres
           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
           DB_PORT: ${{ job.services.postgres.ports[5432] }}
+          REDIS_HOST: redis
+          REDIS_PORT: 6379
         working-directory: ./meduzzen_backend
         run: |
           pytest -vv

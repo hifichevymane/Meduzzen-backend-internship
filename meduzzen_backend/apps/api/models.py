@@ -1,7 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-from api.managers import CustomUserManager
+from .managers import CustomUserManager
 
 
 # Create your models here.
@@ -14,12 +14,14 @@ class TimeStampedModel(models.Model):
         # abstract = True to enable models inherit from TimeStampedModel
         abstract = True
 
+
 # Custom User model
 class User(AbstractUser, TimeStampedModel):
     # Make these fields not to be null
     email = models.EmailField(unique=True, null=False, blank=False)
     first_name = models.CharField(max_length=30, blank=False, null=False)
     last_name = models.CharField(max_length=30, blank=False, null=False)
+    image_path = models.ImageField(upload_to='img', default='profile-pic.webp')
 
     # Assing base user manager for admin panel
     objects = CustomUserManager()

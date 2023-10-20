@@ -1,10 +1,9 @@
-from rest_framework import serializers
+from rest_framework.serializers import ModelSerializer
 
-from companies.models import Company
+from companies.models import Company, CompanyInvitations, CompanyMembers
 
 
-# Company serializer
-class CompanyModelSerializer(serializers.ModelSerializer):
+class CompanyModelSerializer(ModelSerializer):
     class Meta:
         model = Company
         fields = '__all__'
@@ -20,3 +19,16 @@ class CompanyModelSerializer(serializers.ModelSerializer):
 
         validated_data['owner'] = user
         return super().create(validated_data)
+
+
+class CompanyInvitationsModelSerializer(ModelSerializer):
+    class Meta:
+        model = CompanyInvitations
+        fields = '__all__'
+
+
+class CompanyMembersModelSerializer(ModelSerializer):
+    class Meta:
+        model = CompanyMembers
+        fields = '__all__'
+    

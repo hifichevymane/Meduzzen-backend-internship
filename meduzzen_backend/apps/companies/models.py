@@ -1,3 +1,5 @@
+from enum import StrEnum, auto
+
 from api.models import TimeStampedModel
 from django.contrib.auth import get_user_model
 from django.db import models
@@ -5,19 +7,36 @@ from django.db import models
 # User model
 User = get_user_model()
 
+# Status choices for CompanyInvitations model
+class CompanyInvitationStatus(StrEnum):
+    PENDING = auto()
+    ACCEPTED = auto()
+    DECLINED = auto()
+    REVOKED = auto()
+
+    @classmethod
+    def choices(cls):
+        return [(key.value, key.name) for key in cls]
+
+
+# Visibility choices 
+class Visibility(StrEnum):
+    VISIBLE = auto()
+    HIDDEN = auto()
+
+    @classmethod
+    def choices(cls):
+        return [(key.value, key.name) for key in cls]
+
+
 # Create your models here.
 class Company(TimeStampedModel):
-    VISIBILITY_CHOICES = (
-        ('hidden', 'Hidden'),
-        ('visible', 'Visible for all'),
-    )
-
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=50, blank=False, null=False, unique=True)
     description = models.TextField(blank=False, null=False)
     visibility = models.CharField(max_length=15, 
-                                  choices=VISIBILITY_CHOICES, 
-                                  default='visible')
+                                  choices=Visibility.choices(), 
+                                  default=Visibility.VISIBLE.value)
 
     class Meta:
         verbose_name = "Company"
@@ -25,3 +44,33 @@ class Company(TimeStampedModel):
 
     def __str__(self):
         return self.name    
+
+
+# All company requests to the users
+class CompanyInvitations(TimeStampedModel):
+    company = models.ForeignKey(Company, on_delete=models.CASCADE)
+    # Company can't invite one user several times
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    status = models.CharField(default=CompanyInvitationStatus.PENDING.value, 
+                              choices=CompanyInvitationStatus.choices())
+
+    class Meta:
+        verbose_name = "Company Invitation"
+        verbose_name_plural = 'Company Invitations' # Plural naming
+
+    def __str__(self):
+        return f"{self.company} -> {self.user} - {self.status}"
+
+
+# Company members
+class CompanyMembers(TimeStampedModel):
+    company = models.ForeignKey(Company, on_delete=models.CASCADE)
+    # User can't be in multiple companies
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name = "Company Member"
+        verbose_name_plural = 'Company Members' # Plural naming
+
+    def __str__(self):
+        return f"{self.company} - {self.user}"

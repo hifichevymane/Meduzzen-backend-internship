@@ -16,7 +16,7 @@ class CustomUserManager(BaseUserManager):
 
         return user
 
-    def create_super_user(self, email, username, first_name, last_name, 
+    def create_superuser(self, email, username, first_name, last_name, 
                           password, **other_fields):
 
         other_fields.setdefault('is_staff', True)
