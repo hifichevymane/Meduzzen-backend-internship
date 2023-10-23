@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from quizzes.models import Question, Quiz
+from quizzes.models import AnswerOption, Question, Quiz
 
 
 class QuizAdmin(admin.ModelAdmin):
@@ -13,6 +13,12 @@ class QuestionAdmin(admin.ModelAdmin):
     list_filter = ('text', )
 
 
+class AnswerOptionAdmin(admin.ModelAdmin):
+    search_fields = ('text', 'creator')
+    list_filter = ('text', 'creator')
+
+
 # Register your models here.
 admin.site.register(Quiz, QuizAdmin)
 admin.site.register(Question, QuestionAdmin)
+admin.site.register(AnswerOption, AnswerOptionAdmin)

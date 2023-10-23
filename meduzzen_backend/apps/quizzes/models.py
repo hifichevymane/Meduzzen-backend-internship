@@ -21,13 +21,26 @@ class Quiz(TimeStampedModel):
 
 
 class Question(TimeStampedModel):
+    creator = models.ForeignKey(User, on_delete=models.CASCADE)
     text = models.TextField(blank=False, null=False)
-    options = models.JSONField(blank=False, null=False)
-    answer = models.CharField(max_length=128, blank=False, null=False)
+    options = models.ManyToManyField('AnswerOption', related_name='options')
+    answer = models.ManyToManyField('AnswerOption', related_name='answers')
 
     class Meta:
         verbose_name = 'Question'
         verbose_name_plural = 'Questions'
+
+    def __str__(self) -> str:
+        return self.text
+
+
+class AnswerOption(TimeStampedModel):
+    creator = models.ForeignKey(User, on_delete=models.CASCADE)
+    text = models.CharField(max_length=128, blank=False, null=False)
+
+    class Meta:
+        verbose_name = 'Answer option'
+        verbose_name_plural = 'Answer options'
 
     def __str__(self) -> str:
         return self.text

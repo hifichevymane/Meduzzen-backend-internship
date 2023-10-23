@@ -5,9 +5,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
-from quizzes.models import Question, Quiz
-from quizzes.permissions import IsAbleToCreateQuiz, IsAbleToEditDeleteQuiz
-from quizzes.serializers import QuestionModelSerializer, QuizModelSerializer
+from quizzes.models import AnswerOption, Question, Quiz
+from quizzes.permissions import IsAbleToCreateQuiz, IsAbleToEditAnswerOptionQuestion, IsAbleToEditDeleteQuiz
+from quizzes.serializers import AnswerOptionModelSerializer, QuestionModelSerializer, QuizModelSerializer
 
 
 # Create your views here.
@@ -42,3 +42,19 @@ class QuestionModelViewSet(ModelViewSet):
     queryset = Question.objects.all()
     serializer_class = QuestionModelSerializer
     permission_classes = (IsAuthenticated, )
+
+    def get_permissions(self):
+        if self.action in ['update', 'partial_update', 'destroy']:
+            self.permission_classes = (IsAbleToEditAnswerOptionQuestion, )
+        return super().get_permissions()
+
+
+class AnswerOptionModelViewSet(ModelViewSet):
+    queryset = AnswerOption.objects.all()
+    serializer_class = AnswerOptionModelSerializer
+    permission_classes = (IsAuthenticated, )
+
+    def get_permissions(self):
+        if self.action in ['update', 'partial_update', 'destroy']:
+            self.permission_classes = (IsAbleToEditAnswerOptionQuestion, )
+        return super().get_permissions()
