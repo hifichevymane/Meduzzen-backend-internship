@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'api',
     'companies',
     'users',
+    'quizzes',
     # Installed packages
     'rest_framework',
     'corsheaders',

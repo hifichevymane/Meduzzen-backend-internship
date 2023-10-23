@@ -1,6 +1,6 @@
+from api.pagination import CommonPagination
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
@@ -24,20 +24,13 @@ from companies.serializers import (
 )
 
 
-# Pagination class for CompanyModelViewSet
-class CompanyPagination(PageNumberPagination):
-    page_size = 10
-    page_size_query_param = 'page_size'
-    max_page_size = 100
-
-
 # Create your views here.
 # Company Model ViewSet
 class CompanyModelViewSet(ModelViewSet):
     queryset = Company.objects.all()
     serializer_class = CompanyModelSerializer
     permission_classes = (IsAuthenticated, )
-    pagination_class = CompanyPagination
+    pagination_class = CommonPagination
 
     # Assign custom permission classes for PUT PATCH DELETE requests
     def get_permissions(self):
