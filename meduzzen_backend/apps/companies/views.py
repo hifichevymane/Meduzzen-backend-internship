@@ -6,10 +6,11 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from companies.enums import CompanyMemberRole, Visibility
-from companies.models import Company, CompanyInvitations, CompanyMembers
+from companies.models import Company, CompanyInvitations, CompanyMembers, CompanyUserRating
 from companies.permissions import (
     DoesOwnerSendInviteToItself,
     HasOwnerNotSentInviteYet,
+    IsAbleToDeleteCompanyUserRating,
     IsInvitedUser,
     IsOwner,
     IsStaff,
@@ -21,6 +22,7 @@ from companies.serializers import (
     CompanyInvitationsModelSerializer,
     CompanyMembersModelSerializer,
     CompanyModelSerializer,
+    CompanyUserRatingModelSerializer,
 )
 
 
@@ -132,3 +134,14 @@ class CompanyMembersModelViewSet(ModelViewSet):
         else:
             serializer = self.serializer_class(queryset, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class CompanyUserRatingModelViewSet(ModelViewSet):
+    queryset = CompanyUserRating.objects.all()
+    serializer_class = CompanyUserRatingModelSerializer
+    permission_classes = (IsAuthenticated, )
+
+    def get_permissions(self):
+        if self.action == 'destroy':
+            self.permission_classes = (IsAbleToDeleteCompanyUserRating, )
+        return super().get_permissions()

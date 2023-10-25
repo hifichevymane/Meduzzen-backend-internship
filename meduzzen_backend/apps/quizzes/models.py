@@ -2,15 +2,19 @@ from api.models import TimeStampedModel
 from django.contrib.auth import get_user_model
 from django.db import models
 
+from .enums import UserQuizStatus
+
 User = get_user_model()
 
 # Create your models here.
 class Quiz(TimeStampedModel):
+    creator = models.ForeignKey(User, on_delete=models.CASCADE)
     company = models.ForeignKey('companies.Company', on_delete=models.CASCADE)
     title = models.CharField(max_length=80, blank=False, null=False)
     description = models.TextField(blank=False, null=False)
     frequency = models.IntegerField(default=0, blank=False, null=False)
     questions = models.ManyToManyField('Question', related_name='quizzes')
+    question_amount = models.IntegerField(blank=False, null=False)
 
     class Meta:
         verbose_name = 'Quiz'
@@ -44,3 +48,37 @@ class AnswerOption(TimeStampedModel):
 
     def __str__(self) -> str:
         return self.text
+
+
+class QuizResult(TimeStampedModel):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
+    company = models.ForeignKey('companies.Company', on_delete=models.CASCADE)
+    score = models.IntegerField(default=0, blank=False, null=False)
+    # Status of passing quiz
+    status = models.CharField(
+        default=UserQuizStatus.PENDING.value,
+        choices=UserQuizStatus.choices(),
+        blank=False, null=False)
+
+    class Meta:
+        verbose_name = 'Quiz result'
+        verbose_name_plural = 'Quiz results'
+
+    def __str__(self) -> str:
+        return f'{self.quiz} - {self.user} - {self.score} score'
+
+
+# Users' answers on quizzes questions
+class UsersAnswer(TimeStampedModel):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    # Ability to select multiple answer options
+    answer = models.ManyToManyField(AnswerOption, related_name='user_answers')
+    # If user wants to undergo the same quiz multiple times
+    quiz_result = models.ForeignKey(QuizResult, on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name = 'Users answer'
+        verbose_name_plural = 'Users answers'

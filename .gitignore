@@ -9,6 +9,8 @@ __pycache__/
 # ruff linter
 .ruff_cache/
 
+meduzzen_backend/media/img
+
 # IDEs
 .vscode/
 .idea/

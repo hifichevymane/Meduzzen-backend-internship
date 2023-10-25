@@ -54,3 +54,16 @@ class CompanyMembers(TimeStampedModel):
 
     def __str__(self):
         return f"{self.company} - {self.user}"
+
+
+class CompanyUserRating(TimeStampedModel):
+    company = models.ForeignKey(Company, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    avarage_score = models.FloatField(default=0, blank=False, null=False)
+
+    class Meta:
+        verbose_name = "Company User Rating"
+        verbose_name_plural = 'Company User Ratings'
+
+    def __str__(self):
+        return f"{self.company} - {self.user} - {self.avarage_score}"

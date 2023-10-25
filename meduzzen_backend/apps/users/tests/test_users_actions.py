@@ -15,6 +15,8 @@ from users.tests.fixtures.users import (
 
 from .fixtures.user_client import user_api_client
 
+from quizzes.tests.fixtures.quizzes import test_quiz_results, test_questions, test_quizzes, test_answer_options
+
 from companies.models import CompanyMembers
 from companies.enums import CompanyInvitationStatus, CompanyMemberRole
 from users.models import UsersRequests
@@ -115,3 +117,12 @@ def test_send_request_twice(user_api_client, test_user_request, test_company):
 
     request = user_api_client.post(f'{API_URL}/users_requests/', request_payload)
     assert request.status_code == 403
+
+
+@pytest.mark.django_db
+def test_calculate_avarage_score_in_entire_system(user_api_client, test_quiz_results):
+    request = user_api_client.get(f'{API_URL}/users/calculate_avarage_score/')
+
+    assert request.status_code == 200
+    # Check test_company_actions line 180 
+    assert request.data['rating'] == 0.75

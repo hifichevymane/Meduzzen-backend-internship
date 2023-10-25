@@ -1,13 +1,26 @@
 from api.pagination import CommonPagination
-from rest_framework import status
+from rest_framework import mixins, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.viewsets import GenericViewSet, ModelViewSet
 
-from quizzes.models import AnswerOption, Question, Quiz
-from quizzes.permissions import IsAbleToCreateQuiz, IsAbleToEditAnswerOptionQuestion, IsAbleToEditDeleteQuiz
-from quizzes.serializers import AnswerOptionModelSerializer, QuestionModelSerializer, QuizModelSerializer
+from quizzes.models import AnswerOption, Question, Quiz, QuizResult, UsersAnswer
+from quizzes.permissions import (
+    DidUserCompletedTheSameQuiz,
+    DoesUserAnswerExistAlready,
+    IsAbleToCreateQuiz,
+    IsAbleToEditAnswerOptionQuestion,
+    IsAbleToEditDeleteQuiz,
+    IsQuizResultScoreCalculated,
+)
+from quizzes.serializers import (
+    AnswerOptionModelSerializer,
+    QuestionModelSerializer,
+    QuizModelSerializer,
+    QuizResultModelSerializer,
+    UsersAnswerModelSerializer,
+)
 
 
 # Create your views here.
@@ -57,4 +70,36 @@ class AnswerOptionModelViewSet(ModelViewSet):
     def get_permissions(self):
         if self.action in ['update', 'partial_update', 'destroy']:
             self.permission_classes = (IsAbleToEditAnswerOptionQuestion, )
+        return super().get_permissions()
+
+# Use mixins to unable DELETE methods in ModelViewSet
+class QuizResultModelViewSet(GenericViewSet,
+                             mixins.CreateModelMixin,
+                             mixins.ListModelMixin,
+                             mixins.RetrieveModelMixin,
+                             mixins.UpdateModelMixin):
+    queryset = QuizResult.objects.all()
+    serializer_class = QuizResultModelSerializer
+    permission_classes = (IsAuthenticated, )
+
+    def get_permissions(self):
+        if self.action == 'create':
+            self.permission_classes = (DidUserCompletedTheSameQuiz, )
+        elif self.action == 'partial_update':
+            self.permission_classes = (IsQuizResultScoreCalculated, )
+        return super().get_permissions()
+
+
+# Use mixins to unable PATCH, PUT, DELETE methods in ModelViewSet
+class UsersAnswerModelViewSet(GenericViewSet,
+                              mixins.RetrieveModelMixin,
+                              mixins.ListModelMixin,
+                              mixins.CreateModelMixin):
+    queryset = UsersAnswer.objects.all()
+    serializer_class = UsersAnswerModelSerializer
+    permission_classes = (IsAuthenticated, )
+
+    def get_permissions(self):
+        if self.action == 'create':
+            self.permission_classes = (DoesUserAnswerExistAlready, )
         return super().get_permissions()

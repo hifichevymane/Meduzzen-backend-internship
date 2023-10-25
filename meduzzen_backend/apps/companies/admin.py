@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from companies import models
+from companies.models import Company, CompanyInvitations, CompanyMembers, CompanyUserRating
 
 
 # CompanyAdmin class for Django Admin
@@ -19,6 +19,7 @@ class CompanyMembersAdmin(admin.ModelAdmin):
     list_filter = ('company', 'user')
 
 # Register your models here.
-admin.site.register(models.Company, CompanyAdmin)
-admin.site.register(models.CompanyInvitations, CompanyInvitationsAdmin)
-admin.site.register(models.CompanyMembers, CompanyMembersAdmin)
+admin.site.register(Company, CompanyAdmin)
+admin.site.register(CompanyInvitations, CompanyInvitationsAdmin)
+admin.site.register(CompanyMembers, CompanyMembersAdmin)
+admin.site.register(CompanyUserRating)
