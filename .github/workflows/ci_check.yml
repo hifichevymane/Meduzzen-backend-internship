@@ -59,7 +59,8 @@ jobs:
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
           DB_PORT: ${{ job.services.postgres.ports[5432] }}
-          REDIS_LOCATION: redis://localhost:6379/0
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
         working-directory: ./meduzzen_backend
         run: |
           pytest -vv
