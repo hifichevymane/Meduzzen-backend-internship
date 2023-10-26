@@ -81,24 +81,13 @@ class QuizResultModelSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         user = self.context['request'].user
 
-        all_user_answers = UsersAnswer.objects.filter(quiz_id=instance.quiz.id, 
-                                                      user=user, quiz_result=instance.pk)
+        all_users_correct_answers = UsersAnswer.objects.filter(
+            quiz_id=instance.quiz.id, 
+            user=user, quiz_result=instance.pk,
+            is_correct=True
+        )
         
-        # Correct answer counter
-        score = 0
-
-        # Iterate throught all users answers for this quiz
-        for user_answer in all_user_answers.iterator():
-            question = Question.objects.get(pk=user_answer.question.id)
-            user_answers_list = list(user_answer.answer.all())
-            # If multiple answer options we need to calculate how much points will be added to the score
-            question_correct_answers_list = list(question.answer.all())
-                        
-            # If multiple answers check how many of them are correct
-            if user_answers_list == question_correct_answers_list:
-                score += 1
-                    
-        instance.score = score
+        instance.score = len(all_users_correct_answers)
         instance.status = UserQuizStatus.COMPLETED.value
 
         return super().update(instance, validated_data)
@@ -108,11 +97,17 @@ class UsersAnswerModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = UsersAnswer
         fields = '__all__'
-        read_only_fields = ('user', )
+        read_only_fields = ('user', 'is_correct')
 
-    # Automatically assign user with current user
     def create(self, validated_data):
         user = self.context['request'].user
+        question = validated_data['question']
+        user_question_answer = validated_data['answer']
 
+        correct_answer_list = list(question.answer.all())
+
+        # Check if this answer is correct
+        validated_data['is_correct'] = True if user_question_answer == correct_answer_list else False
+        # Automatically assign user with current user
         validated_data['user'] = user
         return super().create(validated_data)

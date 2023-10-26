@@ -30,7 +30,7 @@ class QuizResultAdmin(admin.ModelAdmin):
 class UsersAnswerAdmin(admin.ModelAdmin):
     search_fields = ('user', 'quiz', 'question', 'answer')
     list_filter = ('user', 'quiz', 'question', 'answer')
-    list_display = ('quiz_result', 'question', 'quiz', 'user', 'pk')
+    list_display = ('quiz_result', 'question', 'is_correct', 'quiz', 'user', 'pk')
 
 # Register your models here.
 admin.site.register(Quiz, QuizAdmin)

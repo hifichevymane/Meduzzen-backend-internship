@@ -1,4 +1,5 @@
 from api.pagination import CommonPagination
+from django.core.cache import cache
 from rest_framework import mixins, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -103,3 +104,28 @@ class UsersAnswerModelViewSet(GenericViewSet,
         if self.action == 'create':
             self.permission_classes = (DoesUserAnswerExistAlready, )
         return super().get_permissions()
+    
+    def create(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data, context={'request': request})
+
+        if serializer.is_valid():
+            serializer.save()
+            data = serializer.data
+
+            quiz_company = Quiz.objects.get(pk=data['quiz']).company
+            
+            cache_timeout = 48 * 3600 # Redis will keep data 48 hours
+            # Form unique cache_key and value
+            cache_key = f'user_answer_{data["id"]}'
+            cache_value = {
+                'user': data['user'],
+                'company': quiz_company.id,
+                'quiz': data['quiz'],
+                'question': data['question'],
+                'answer': data['answer'],
+                'is_correct': data['is_correct']
+            }
+            cache.set(cache_key, cache_value, cache_timeout)
+            return Response(data, status.HTTP_201_CREATED)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
