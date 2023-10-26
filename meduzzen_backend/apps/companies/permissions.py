@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework.permissions import BasePermission
 
+from companies.enums import CompanyMemberRole
 from companies.models import Company, CompanyInvitations, CompanyMembers
 
 User = get_user_model()
@@ -105,3 +106,9 @@ class DoesOwnerSendInviteToItself(BasePermission):
             user = request.data.get('user')
             return owner.id != user
         return False
+
+
+class IsAbleToDeleteCompanyUserRating(BasePermission):
+    def has_permission(self, request, view):
+        user = request.user
+        return CompanyMembers.objects.filter(user=user, role=CompanyMemberRole.ADMIN.value).exists()

@@ -1,23 +1,17 @@
-# ruff: noqa: F401 F811 I001 F403
+# ruff: noqa: F401 F811 F403
 import pytest
+from api.tests.fixtures.client import API_URL, api_client
+from quizzes.tests.fixtures.quizzes import test_answer_options, test_questions, test_quiz_results, test_quizzes
+from users.enums import UsersRequestStatus
+from users.tests.fixtures.user_client import user_api_client
+from users.tests.fixtures.users import test_invites_payloads, test_owner, test_user_request, test_users
 
-from api.tests.fixtures.client import api_client, API_URL
-from companies.tests.fixtures.companies import (
-    test_company,
-    test_company_member,
-    test_company_invite)
-
-from users.tests.fixtures.users import (
-    test_users, 
-    test_owner, 
-    test_user_request, 
-    test_invites_payloads)
+from companies.enums import CompanyInvitationStatus, CompanyMemberRole
+from companies.models import CompanyInvitations, CompanyMembers
+from companies.tests.fixtures.companies import test_company, test_company_invite, test_company_member
 
 from .fixtures.companies_client import owner_api_client
 
-from companies.models import CompanyMembers, CompanyInvitations
-from companies.enums import CompanyInvitationStatus, CompanyMemberRole
-from users.enums import UsersRequestStatus
 
 # Test send invite
 @pytest.mark.django_db
@@ -147,3 +141,36 @@ def test_appoint_remove_admin_role(role, owner_api_client, test_company_member):
     
     assert request.status_code == 200
     assert request.data['role'] == role
+
+
+@pytest.mark.django_db
+def test_calculate_avarage_score_in_company(user_api_client, test_quiz_results, 
+                                            test_company, test_owner, test_users):
+    test_user = test_users[0]
+
+    test_company_user_rating_payload = {
+        "company": test_company.id,
+        "user": test_user.id
+    }
+
+    # Create company user rating
+    test_company_user_rating_request = user_api_client.post(f'{API_URL}/company_user_ratings/',
+                                                             test_company_user_rating_payload)
+    
+    assert test_company_user_rating_request.status_code == 201
+    assert test_company_user_rating_request.data['avarage_score'] == 0.0 # Default avarage score
+
+    test_company_user_rating_id = test_company_user_rating_request.data['id']
+    # PATCH request to calculate avarage score
+    test_calculate_avarage_score_request = user_api_client.patch(
+        f'{API_URL}/company_user_ratings/{test_company_user_rating_id}/')
+    
+    assert test_calculate_avarage_score_request.status_code == 200
+    '''
+    We have two quiz results, one quiz was completed with 2 correct answers out of 2
+    Another quiz was completed with 1 correct answer out of 2
+    
+    To calculate avarage value:
+    avarage_score = (2 + 1)/(2 + 2) = 3/4 = 0.75
+    '''
+    assert test_calculate_avarage_score_request.data['avarage_score'] == 0.75
