@@ -1,5 +1,4 @@
 from api.pagination import CommonPagination
-from django.core.cache import cache
 from rest_framework import mixins, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -22,6 +21,7 @@ from quizzes.serializers import (
     QuizResultModelSerializer,
     UsersAnswerModelSerializer,
 )
+from utils.caching import cache_user_answer
 
 
 # Create your views here.
@@ -114,18 +114,7 @@ class UsersAnswerModelViewSet(GenericViewSet,
 
             quiz_company = Quiz.objects.get(pk=data['quiz']).company
             
-            cache_timeout = 48 * 3600 # Redis will keep data 48 hours
-            # Form unique cache_key and value
-            cache_key = f'user_answer_{data["id"]}'
-            cache_value = {
-                'user': data['user'],
-                'company': quiz_company.id,
-                'quiz': data['quiz'],
-                'question': data['question'],
-                'answer': data['answer'],
-                'is_correct': data['is_correct']
-            }
-            cache.set(cache_key, cache_value, cache_timeout)
+            cache_user_answer(data, quiz_company.id)
             return Response(data, status.HTTP_201_CREATED)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
