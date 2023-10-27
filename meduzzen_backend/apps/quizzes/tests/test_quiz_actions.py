@@ -91,7 +91,10 @@ def test_undergo_quiz(owner_api_client, test_quizzes, test_questions, test_answe
     test_user_answer_request_1 = owner_api_client.post(f'{API_URL}/users_answers/', 
                                                        test_user_answer_payload_1)
     assert test_user_answer_request_1.status_code == 201
-    assert UsersAnswer.objects.get(pk=test_user_answer_request_1.data['id'])
+
+    user_answer_1 = UsersAnswer.objects.get(pk=test_user_answer_request_1.data['id'])
+    assert user_answer_1
+    assert user_answer_1.is_correct
 
     test_user_answer_payload_2 = {
         "quiz": test_quiz.id,
@@ -105,7 +108,9 @@ def test_undergo_quiz(owner_api_client, test_quizzes, test_questions, test_answe
     test_user_answer_request_2 = owner_api_client.post(f'{API_URL}/users_answers/', 
                                                        test_user_answer_payload_2)
     assert test_user_answer_request_2.status_code == 201
-    assert UsersAnswer.objects.get(pk=test_user_answer_request_2.data['id'])
+    user_answer_2 = UsersAnswer.objects.get(pk=test_user_answer_request_2.data['id'])
+    assert user_answer_2
+    assert user_answer_2.is_correct
 
     # PATCH request to set status to completed
     test_complete_test_request = owner_api_client.patch(f'{API_URL}/quiz_results/{test_quiz_result.id}/')

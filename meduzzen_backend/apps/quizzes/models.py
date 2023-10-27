@@ -76,6 +76,7 @@ class UsersAnswer(TimeStampedModel):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     # Ability to select multiple answer options
     answer = models.ManyToManyField(AnswerOption, related_name='user_answers')
+    is_correct = models.BooleanField(blank=False, null=False)
     # If user wants to undergo the same quiz multiple times
     quiz_result = models.ForeignKey(QuizResult, on_delete=models.CASCADE)
 

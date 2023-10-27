@@ -21,6 +21,7 @@ from quizzes.serializers import (
     QuizResultModelSerializer,
     UsersAnswerModelSerializer,
 )
+from utils.caching import cache_user_answer
 
 
 # Create your views here.
@@ -103,3 +104,17 @@ class UsersAnswerModelViewSet(GenericViewSet,
         if self.action == 'create':
             self.permission_classes = (DoesUserAnswerExistAlready, )
         return super().get_permissions()
+    
+    def create(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data, context={'request': request})
+
+        if serializer.is_valid():
+            serializer.save()
+            data = serializer.data
+
+            quiz_company = Quiz.objects.get(pk=data['quiz']).company
+            
+            cache_user_answer(data, quiz_company.id)
+            return Response(data, status.HTTP_201_CREATED)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
