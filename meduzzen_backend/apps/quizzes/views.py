@@ -1,4 +1,7 @@
 from api.pagination import CommonPagination
+from companies.models import Company
+from django.contrib.auth import get_user_model
+from django.http import FileResponse
 from rest_framework import mixins, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -12,6 +15,7 @@ from quizzes.permissions import (
     IsAbleToCreateQuiz,
     IsAbleToEditAnswerOptionQuestion,
     IsAbleToEditDeleteQuiz,
+    IsAbleToExportData,
     IsQuizResultScoreCalculated,
 )
 from quizzes.serializers import (
@@ -22,7 +26,9 @@ from quizzes.serializers import (
     UsersAnswerModelSerializer,
 )
 from utils.caching import cache_user_answer
+from utils.export_data import ExportDataFileType, export_quiz_result
 
+User = get_user_model()
 
 # Create your views here.
 class QuizModelViewSet(ModelViewSet):
@@ -90,6 +96,46 @@ class QuizResultModelViewSet(GenericViewSet,
             self.permission_classes = (IsQuizResultScoreCalculated, )
         return super().get_permissions()
 
+    # Export data from Redis in CSV and JSON
+    @action(detail=False, url_path='export_data', methods=['get'],
+            permission_classes=[IsAbleToExportData])
+    def export_quiz_result_data(self, request):
+        user = None
+        company = None
+        file_type = request.query_params.get('file_type', ExportDataFileType.CSV.value)
+        
+        # Check if file_type param is valid
+        if file_type != ExportDataFileType.CSV.value and file_type != ExportDataFileType.JSON.value:
+            return Response({'detail': 'Wrong file_type parameter'}, status.HTTP_400_BAD_REQUEST)
+
+        # Get data from query params
+        user_id = request.query_params.get('user')
+        company_id = request.query_params.get('company')
+
+        if user_id:
+            try:
+                user = User.objects.get(pk=user_id)
+            except User.DoesNotExist:
+                return Response({'detail': 'User not found'}, status.HTTP_404_NOT_FOUND)
+        
+        if company_id:
+            try:
+                company = Company.objects.get(pk=company_id)
+            except Company.DoesNotExist:
+                return Response({'detail': 'Company not found'}, status.HTTP_404_NOT_FOUND)
+
+        file_path = export_quiz_result(
+            file_type=file_type, user_instance=user, company_instance=company
+        )
+
+        # Create a file response
+        response = FileResponse(
+            open(file_path, 'rb'),
+            as_attachment=True, 
+            filename=f"redis_data.{file_type}"
+        )
+
+        return response
 
 # Use mixins to unable PATCH, PUT, DELETE methods in ModelViewSet
 class UsersAnswerModelViewSet(GenericViewSet,

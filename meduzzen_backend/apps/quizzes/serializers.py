@@ -1,7 +1,10 @@
+from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
 from quizzes.models import AnswerOption, Question, Quiz, QuizResult, UserQuizStatus, UsersAnswer
+from utils.caching import cache_quiz_result
 
+User = get_user_model()
 
 class QuizModelSerializer(serializers.ModelSerializer):
     class Meta:
@@ -90,6 +93,8 @@ class QuizResultModelSerializer(serializers.ModelSerializer):
         instance.score = len(all_users_correct_answers)
         instance.status = UserQuizStatus.COMPLETED.value
 
+        cache_quiz_result(instance)
+
         return super().update(instance, validated_data)
 
 
@@ -107,7 +112,7 @@ class UsersAnswerModelSerializer(serializers.ModelSerializer):
         correct_answer_list = list(question.answer.all())
 
         # Check if this answer is correct
-        validated_data['is_correct'] = True if user_question_answer == correct_answer_list else False
+        validated_data['is_correct'] = user_question_answer == correct_answer_list
         # Automatically assign user with current user
         validated_data['user'] = user
         return super().create(validated_data)
