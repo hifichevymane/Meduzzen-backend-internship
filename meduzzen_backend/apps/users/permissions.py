@@ -1,6 +1,7 @@
 from companies.models import Company
 from rest_framework.permissions import BasePermission
 
+from users.enums import UsersRequestStatus
 from users.models import UsersRequests
 
 
@@ -10,7 +11,9 @@ class HasUserNotSentRequestYet(BasePermission):
             company = request.data.get('company')
             user = request.user
             # Return true if user has not already sent request
-            return not UsersRequests.objects.filter(company=company, user=user).exists()
+            return not UsersRequests.objects.filter(
+                company=company, user=user, status=UsersRequestStatus.PENDING.value
+            ).exists()
         return False
 
 

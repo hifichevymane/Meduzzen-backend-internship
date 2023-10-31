@@ -10,6 +10,7 @@ __pycache__/
 .ruff_cache/
 
 meduzzen_backend/media/img
+meduzzen_backend/exported_data
 
 # IDEs
 .vscode/

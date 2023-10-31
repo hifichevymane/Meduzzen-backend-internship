@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework.permissions import BasePermission
 
-from companies.enums import CompanyMemberRole
+from companies.enums import CompanyInvitationStatus, CompanyMemberRole
 from companies.models import Company, CompanyInvitations, CompanyMembers
 
 User = get_user_model()
@@ -95,7 +95,10 @@ class HasOwnerNotSentInviteYet(BasePermission):
             company = request.data.get('company')
             user = request.data.get('user')
             # Return true if owner has not already sent invite
-            return not CompanyInvitations.objects.filter(company=company, user=user).exists()
+            return not CompanyInvitations.objects.filter(
+                company=company, user=user, 
+                status=CompanyInvitationStatus.PENDING.value
+            ).exists()
         return False
 
 

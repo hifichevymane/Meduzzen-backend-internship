@@ -73,5 +73,33 @@ class DidUserCompletedTheSameQuiz(BasePermission):
 class IsQuizResultScoreCalculated(BasePermission):
     def has_permission(self, request, view):
         pk = view.kwargs.get('pk')
-        quiz_result = QuizResult.objects.get(pk=pk)
-        return quiz_result.status == UserQuizStatus.PENDING.value
+        is_quiz_result_calculated = QuizResult.objects.filter(
+            pk=pk, status=UserQuizStatus.PENDING.value).exists()
+        
+        return is_quiz_result_calculated
+
+
+class IsAbleToExportData(BasePermission):
+    def has_permission(self, request, view):
+        current_user = request.user
+        passed_user_id = request.query_params.get('user')
+        passed_company_id = request.query_params.get('company')
+
+        is_current_user = False
+        is_owner = False
+        is_company_admin = False
+
+        if passed_company_id:
+            is_owner = Company.objects.filter(pk=passed_company_id, owner=current_user).exists()
+
+            if passed_user_id:
+                is_company_admin = CompanyMembers.objects.filter(
+                    user=current_user, 
+                    company_id=int(passed_company_id),
+                    role=CompanyMemberRole.ADMIN.value
+                    ).exists()
+
+        if passed_user_id:
+            is_current_user = current_user.id == int(passed_user_id)
+
+        return is_current_user or is_owner or is_company_admin
