@@ -2,30 +2,10 @@ import csv
 import datetime
 import json
 
-from .caching import get_redis_data_by_key
 from .enums import ExportDataFileType
 
 
-def export_quiz_result(file_type=ExportDataFileType.CSV.value, 
-                       user_instance=None, company_instance=None):
-    data = []
-
-    if user_instance:
-        if company_instance: # Search all quiz results for particular user and company
-            data = get_redis_data_by_key('quiz_result_*', 
-                                         username=user_instance.username, 
-                                         company_name=company_instance.name,
-                                         file_type=file_type)
-        else: # Search all quiz results for particular user
-            data = get_redis_data_by_key('quiz_result_*', 
-                                         username=user_instance.username,
-                                         file_type=file_type)
-    else:
-        if company_instance: # Search all quiz results for particular company
-            data = get_redis_data_by_key('quiz_result_*', 
-                                         company_name=company_instance.name,
-                                         file_type=file_type)
-    
+def export_quiz_result(data, file_type=ExportDataFileType.CSV.value):
     filepath = f'exported_data/quiz_result_{datetime.datetime.now()}.csv'
 
     if file_type == ExportDataFileType.JSON.value:

@@ -112,27 +112,47 @@ class QuizResultModelViewSet(GenericViewSet,
         user_id = request.query_params.get('user')
         company_id = request.query_params.get('company')
 
-        if user_id:
-            try:
-                user = User.objects.get(pk=user_id)
-            except User.DoesNotExist:
-                return Response({'detail': 'User not found'}, status.HTTP_404_NOT_FOUND)
-        
-        if company_id:
-            try:
-                company = Company.objects.get(pk=company_id)
-            except Company.DoesNotExist:
-                return Response({'detail': 'Company not found'}, status.HTTP_404_NOT_FOUND)
+        queryset = []
+        data = []
 
-        file_path = export_quiz_result(
-            file_type=file_type, user_instance=user, company_instance=company
-        )
+        if user_id:
+            user = User.objects.get(pk=user_id)
+            if company_id: # Get the quiz results of a particular user in a company
+                company = Company.objects.get(pk=company_id)
+                queryset = QuizResult.objects.filter(user=user, company=company)
+            else: # Get the quiz results of a particular user
+                queryset = QuizResult.objects.filter(user=user)
+        
+        else:
+            if company_id: # Get the quiz results of a particular company
+                company = Company.objects.get(pk=company_id)
+                queryset = QuizResult.objects.filter(company=company)
+        
+        # Generate data list
+        if file_type == ExportDataFileType.CSV.value:
+            for obj in queryset:
+                record = (obj.id, obj.user, obj.company, obj.quiz, obj.score, obj.updated_at)
+                data.append(record)
+        else:
+            for obj in queryset:
+                record = {
+                    'id': obj.id,
+                    'user': obj.user.username,
+                    'company': obj.company.name,
+                    'quiz': obj.quiz.title,
+                    'score': obj.score,
+                    'date_passed': obj.updated_at
+                }
+
+                data.append(record)
+
+        file_path = export_quiz_result(data, file_type=file_type)
 
         # Create a file response
         response = FileResponse(
             open(file_path, 'rb'),
             as_attachment=True, 
-            filename=f"redis_data.{file_type}"
+            filename=f"exported_data.{file_type}"
         )
 
         return response

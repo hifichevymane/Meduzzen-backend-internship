@@ -1,13 +1,14 @@
+from api.serializers import UserSerializer
 from django.contrib.auth import get_user_model
 from quizzes.models import QuizResult
-from rest_framework.serializers import ModelSerializer
+from rest_framework import serializers
 
 from companies.enums import CompanyInvitationStatus
 from companies.models import Company, CompanyInvitations, CompanyMembers, CompanyUserRating
 
 User = get_user_model()
 
-class CompanyModelSerializer(ModelSerializer):
+class CompanyModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = Company
         fields = '__all__'
@@ -25,11 +26,21 @@ class CompanyModelSerializer(ModelSerializer):
         return super().create(validated_data)
 
 
-class CompanyInvitationsModelSerializer(ModelSerializer):
+class CompanyInvitationsModelSerializer(serializers.ModelSerializer):
+    user = serializers.SerializerMethodField()
+
     class Meta:
         model = CompanyInvitations
         fields = '__all__'
         read_only_fields = ('company', 'user')
+    
+    def get_user(self, obj):
+        # If method is POST we recieve user id
+        if self.context['request'].method == 'POST':
+            return obj.user_id
+        else: # Display all user info
+            user = User.objects.get(pk=obj.user_id)
+            return UserSerializer(user).data
 
     def create(self, validated_data):
         company_id = self.context['request'].data.get('company')
@@ -50,13 +61,23 @@ class CompanyInvitationsModelSerializer(ModelSerializer):
         return super().update(instance, validated_data)
 
 
-class CompanyMembersModelSerializer(ModelSerializer):
+class CompanyMembersModelSerializer(serializers.ModelSerializer):
+    user = serializers.SerializerMethodField()
+
     class Meta:
         model = CompanyMembers
         fields = '__all__'
+    
+    def get_user(self, obj):
+        # If method is POST we recieve user id
+        if self.context['request'].method == 'POST':
+            return obj.user_id
+        else: # Display all user info
+            user = User.objects.get(pk=obj.user_id)
+            return UserSerializer(user).data
 
 
-class CompanyUserRatingModelSerializer(ModelSerializer):
+class CompanyUserRatingModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = CompanyUserRating
         fields = '__all__'
