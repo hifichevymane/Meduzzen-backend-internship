@@ -1,7 +1,7 @@
 import logging
 
 from companies.models import CompanyMembers
-from companies.serializers import CompanyMembersModelSerializer
+from companies.serializers import CompanyMembersReadModelSerializer
 from django.contrib.auth import get_user_model
 from quizzes.models import QuizResult
 from rest_framework import mixins, status
@@ -78,7 +78,7 @@ class UserModelViewSet(GenericViewSet,
         try:
             queryset = CompanyMembers.objects.get(user_id=pk)
 
-            serializer = CompanyMembersModelSerializer(queryset)
-            return Response({'company': serializer.data['company']})
+            serializer = CompanyMembersReadModelSerializer(queryset, context={'request': request})
+            return Response(serializer.data)
         except CompanyMembers.DoesNotExist:
             return Response({'detail': 'Not found'}, status.HTTP_404_NOT_FOUND)

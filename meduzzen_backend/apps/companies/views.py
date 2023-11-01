@@ -1,4 +1,5 @@
 from api.pagination import CommonPagination
+from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -20,19 +21,27 @@ from companies.permissions import (
 )
 from companies.serializers import (
     CompanyInvitationsModelSerializer,
-    CompanyMembersModelSerializer,
-    CompanyModelSerializer,
+    CompanyMembersReadModelSerializer,
+    CompanyMembersWriteModelSerializer,
+    CompanyReadModelSerializer,
     CompanyUserRatingModelSerializer,
+    CompanyWriteModelSerializer,
 )
 
+User = get_user_model()
 
 # Create your views here.
 # Company Model ViewSet
 class CompanyModelViewSet(ModelViewSet):
     queryset = Company.objects.all()
-    serializer_class = CompanyModelSerializer
+    serializer_class = CompanyReadModelSerializer
     permission_classes = (IsAuthenticated, )
     pagination_class = CommonPagination
+
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return CompanyWriteModelSerializer
+        return CompanyReadModelSerializer
 
     # Assign custom permission classes for PUT PATCH DELETE requests
     def get_permissions(self):
@@ -71,7 +80,7 @@ class CompanyInvitationsModelViewSet(ModelViewSet):
             self.permission_classes = [IsUsersCompany | 
                                        IsInvitedUser]
         return super().get_permissions()
-    
+
     # Get current user's list of invitations to companies
     @action(detail=False, url_path='me', methods=['get'])
     def get_companies_invitations(self, request):
@@ -81,7 +90,7 @@ class CompanyInvitationsModelViewSet(ModelViewSet):
             return Response({'detail': "You have no invitations to companies"}, 
                             status.HTTP_404_NOT_FOUND)
         else:
-            serializer = self.serializer_class(queryset, many=True)
+            serializer = self.serializer_class(queryset, many=True, context={'request': request})
             return Response(serializer.data, status=status.HTTP_200_OK)
     
     # Get company list of invited users by id
@@ -93,15 +102,20 @@ class CompanyInvitationsModelViewSet(ModelViewSet):
             return Response({'detail': 'There are no invited users or the company does not exist'}, 
                             status=status.HTTP_400_BAD_REQUEST)
         else:
-            serializer = self.serializer_class(queryset, many=True)
+            serializer = self.serializer_class(queryset, many=True, context={'request': request})
             return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 # All members of Company
 class CompanyMembersModelViewSet(ModelViewSet):
     queryset = CompanyMembers.objects.all()
-    serializer_class = CompanyMembersModelSerializer
+    serializer_class = CompanyMembersReadModelSerializer
     permission_classes = (IsAuthenticated, )
+
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return CompanyMembersWriteModelSerializer
+        return CompanyMembersReadModelSerializer
 
     # If user is able to edit company members list
     def get_permissions(self):
@@ -120,7 +134,7 @@ class CompanyMembersModelViewSet(ModelViewSet):
         if not queryset:
             return Response({'detail': "Not found"}, status.HTTP_404_NOT_FOUND)
         else:
-            serializer = self.serializer_class(queryset, many=True)
+            serializer = self.serializer_class(queryset, many=True, context={'request': request})
             return Response(serializer.data, status=status.HTTP_200_OK)
     
     # Get all company admin list by company_id
