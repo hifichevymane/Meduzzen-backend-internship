@@ -1,5 +1,9 @@
 from api.pagination import CommonPagination
+from api.permissions import IsAbleToGetLastCompletionTime
 from django.contrib.auth import get_user_model
+from django.db.models import OuterRef, Subquery
+from quizzes.enums import UserQuizStatus
+from quizzes.models import QuizResult
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -148,6 +152,22 @@ class CompanyMembersModelViewSet(ModelViewSet):
         else:
             serializer = self.serializer_class(queryset, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    @action(detail=True, url_path='last_taken_test_times', 
+            methods=['get'], permission_classes=(IsAbleToGetLastCompletionTime, ))
+    def get_member_last_taken_test_times(self, request, pk=None):
+        # Subquery
+        last_quiz_time_subquery = QuizResult.objects.filter(
+            user=OuterRef('user_id'),
+            status=UserQuizStatus.COMPLETED.value
+        ).order_by('-updated_at').values('updated_at')[:1]
+
+        # Get company members and their last taken quiz time
+        queryset = CompanyMembers.objects.filter(company_id=pk).annotate(
+            last_taken_quiz_time=Subquery(last_quiz_time_subquery)
+        ).values('user', 'last_taken_quiz_time')
+
+        return Response(queryset)
 
 
 class CompanyUserRatingModelViewSet(ModelViewSet):

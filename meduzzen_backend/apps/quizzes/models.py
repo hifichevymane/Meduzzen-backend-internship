@@ -13,7 +13,7 @@ class Quiz(TimeStampedModel):
     title = models.CharField(max_length=80, blank=False, null=False)
     description = models.TextField(blank=False, null=False)
     frequency = models.IntegerField(default=0, blank=False, null=False)
-    questions = models.ManyToManyField('Question', related_name='quizzes')
+    questions = models.ManyToManyField('Question', related_name='quizzes', blank=True)
     question_amount = models.IntegerField(blank=False, null=False)
 
     class Meta:

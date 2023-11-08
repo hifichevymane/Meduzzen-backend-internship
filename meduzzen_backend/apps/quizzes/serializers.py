@@ -1,3 +1,4 @@
+from api.serializers import UserSerializer
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
@@ -6,29 +7,33 @@ from utils.caching import cache_quiz_result
 
 User = get_user_model()
 
-class QuizModelSerializer(serializers.ModelSerializer):
+
+class AnswerOptionModelSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Quiz
+        model = AnswerOption
         fields = '__all__'
-        read_only_fields = ('creator', 'question_amount')
-    
-    def validate_questions(self, value):
-        # Check if there are at least 2 questions and more
-        if len(value) < 2:
-            raise serializers.ValidationError('there must be at least two questions in the quiz')
-        return value
-    
+        read_only_fields = ('creator', )
+
+    # Automaticaly assign current user as the creator
     def create(self, validated_data):
         user = self.context['request'].user
-        questions = self.context['request'].data.get('questions')
-        
+
         validated_data['creator'] = user
-        # Automatically assign amount of questions
-        validated_data['question_amount'] = len(questions)
         return super().create(validated_data)
 
 
-class QuestionModelSerializer(serializers.ModelSerializer):
+class QuestionReadModelSerializer(serializers.ModelSerializer):
+    creator = UserSerializer()
+    options = AnswerOptionModelSerializer(many=True)
+    answer = AnswerOptionModelSerializer(many=True)
+
+    class Meta:
+        model = Question
+        fields = '__all__'
+        read_only_fields = ('creator', )
+
+
+class QuestionWriteModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = Question
         fields = '__all__'
@@ -48,17 +53,37 @@ class QuestionModelSerializer(serializers.ModelSerializer):
         return value
 
 
-class AnswerOptionModelSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = AnswerOption
-        fields = '__all__'
-        read_only_fields = ('creator', )
+class QuizReadModelSerializer(serializers.ModelSerializer):
+    creator = UserSerializer()
+    questions = QuestionReadModelSerializer(many=True)
 
-    # Automaticaly assign current user as the creator
+    class Meta:
+        model = Quiz
+        fields = '__all__'
+        read_only_fields = ('creator', 'question_amount')
+
+
+class QuizWriteModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Quiz
+        fields = '__all__'
+        read_only_fields = ('creator', 'question_amount')
+    
+    def validate_questions(self, value):
+        if self.partial: # Validate only when PATCH request
+        # Check if there are at least 2 questions and more
+            if len(value) < 2:
+                raise serializers.ValidationError('there must be at least two questions in the quiz')
+            return value
+        return value
+    
     def create(self, validated_data):
         user = self.context['request'].user
-
+        questions = self.context['request'].data.get('questions')
+        
         validated_data['creator'] = user
+        # Automatically assign amount of questions
+        validated_data['question_amount'] = len(questions)
         return super().create(validated_data)
 
 
@@ -92,6 +117,7 @@ class QuizResultModelSerializer(serializers.ModelSerializer):
         
         instance.score = len(all_users_correct_answers)
         instance.status = UserQuizStatus.COMPLETED.value
+        instance.quiz.frequency += 1
 
         cache_quiz_result(instance)
 
