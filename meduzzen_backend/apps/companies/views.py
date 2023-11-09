@@ -153,9 +153,9 @@ class CompanyMembersModelViewSet(ModelViewSet):
             serializer = self.serializer_class(queryset, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
     
-    @action(detail=True, url_path='last_taken_test_times', 
+    @action(detail=True, url_path='last_taken_quiz_times', 
             methods=['get'], permission_classes=(IsAbleToGetLastCompletionTime, ))
-    def get_member_last_taken_test_times(self, request, pk=None):
+    def get_member_last_taken_quiz_times(self, request, pk=None):
         # Subquery
         last_quiz_time_subquery = QuizResult.objects.filter(
             user=OuterRef('user_id'),

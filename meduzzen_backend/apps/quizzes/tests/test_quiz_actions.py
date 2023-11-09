@@ -6,16 +6,15 @@ from companies.tests.fixtures.companies_client import owner_api_client, test_own
 
 from quizzes.models import AnswerOption, Question, Quiz, QuizResult, UserQuizStatus, UsersAnswer
 from quizzes.tests.fixtures.quizzes import test_answer_options, test_questions, test_quizzes
+from quizzes.tests.pydantic.quizzes import AnswerOptionBody, QuestionBody, QuizBody, QuizResultBody, UserAnswerBody
 
 
 @pytest.mark.parametrize('option_text', ['Yes', 'No'])
 @pytest.mark.django_db
 def test_create_answer_options(option_text, owner_api_client):
-    test_option = {
-        'text': option_text
-    }
+    test_option = AnswerOptionBody(text=option_text)
 
-    request = owner_api_client.post(f"{API_URL}/answer_options/", test_option)
+    request = owner_api_client.post(f"{API_URL}/answer_options/", test_option.model_dump())
     assert request.status_code == 201
     assert AnswerOption.objects.get(pk=request.data['id'])
 
@@ -24,17 +23,13 @@ def test_create_answer_options(option_text, owner_api_client):
 def test_create_question(owner_api_client, test_answer_options):
     test_option_1, test_option_2 = test_answer_options
 
-    test_question = {
-        "text": "Are you gay?",
-        "options": [
-            test_option_1.id, test_option_2.id
-        ],
-        "answer": [
-            test_option_1.id,
-        ]
-    }
+    test_question = QuestionBody(
+        text="Are you gay?",
+        options=[test_option_1.id, test_option_2.id],
+        answer=[test_option_1.id,]
+    )
 
-    request = owner_api_client.post(f'{API_URL}/questions/', test_question)
+    request = owner_api_client.post(f'{API_URL}/questions/', test_question.model_dump())
     assert request.status_code == 201
     assert Question.objects.get(pk=request.data['id'])
 
@@ -42,17 +37,14 @@ def test_create_question(owner_api_client, test_answer_options):
 @pytest.mark.django_db
 def test_create_quiz(owner_api_client, test_questions, test_company):
     test_question_1, test_question_2 = test_questions
-    test_quiz_payload = {
-        "company": test_company.id,
-        "title": "Gay test",
-        "description": "Gay test",
-        "questions": [
-            test_question_1.id,
-            test_question_2.id
-        ]
-    }
+    test_quiz_payload = QuizBody(
+        company=test_company.id,
+        title="Gay test",
+        description="Gay test",
+        questions= [test_question_1.id, test_question_2.id]
+    )
 
-    request = owner_api_client.post(f'{API_URL}/quizzes/', test_quiz_payload)
+    request = owner_api_client.post(f'{API_URL}/quizzes/', test_quiz_payload.model_dump())
     assert request.status_code == 201
     assert Quiz.objects.get(pk=request.data['id'])
 
@@ -61,13 +53,13 @@ def test_create_quiz(owner_api_client, test_questions, test_company):
 def test_undergo_quiz(owner_api_client, test_quizzes, test_questions, test_answer_options):
     test_quiz = test_quizzes[0]
 
-    start_test_request_payload = {
-        'quiz': test_quiz.id
-    }
+    start_test_request_payload = QuizResultBody(quiz=test_quiz.id)
 
     # Send POST request to start the quiz
-    start_quiz_request = owner_api_client.post(f'{API_URL}/quiz_results/',
-                                               start_test_request_payload)
+    start_quiz_request = owner_api_client.post(
+        f'{API_URL}/quiz_results/',
+        start_test_request_payload.model_dump()
+    )
     assert start_quiz_request.status_code == 201
 
     test_quiz_result = QuizResult.objects.get(pk=start_quiz_request.data['id'])
@@ -78,35 +70,35 @@ def test_undergo_quiz(owner_api_client, test_quizzes, test_questions, test_answe
     test_question_1, test_question_2 = test_questions
     test_answer_option_1 = test_answer_options[0]
 
-    test_user_answer_payload_1 = {
-        "quiz": test_quiz.id,
-        "question": test_question_1.id,
-        "answer": [
-            test_answer_option_1.id
-        ],
-        "quiz_result": test_quiz_result.id
-    }
+    test_user_answer_payload_1 = UserAnswerBody(
+        quiz=test_quiz.id,
+        question=test_question_1.id,
+        answer=[test_answer_option_1.id],
+        quiz_result=test_quiz_result.id
+    )
 
     # Create a user answer to a question
-    test_user_answer_request_1 = owner_api_client.post(f'{API_URL}/users_answers/', 
-                                                       test_user_answer_payload_1)
+    test_user_answer_request_1 = owner_api_client.post(
+        f'{API_URL}/users_answers/', 
+        test_user_answer_payload_1.model_dump()
+    )
     assert test_user_answer_request_1.status_code == 201
 
     user_answer_1 = UsersAnswer.objects.get(pk=test_user_answer_request_1.data['id'])
     assert user_answer_1
     assert user_answer_1.is_correct
 
-    test_user_answer_payload_2 = {
-        "quiz": test_quiz.id,
-        "question": test_question_2.id,
-        "answer": [
-            test_answer_option_1.id
-        ],
-        "quiz_result": test_quiz_result.id
-    }
+    test_user_answer_payload_2 = UserAnswerBody(
+        quiz=test_quiz.id,
+        question=test_question_2.id,
+        answer=[test_answer_option_1.id],
+        quiz_result=test_quiz_result.id
+    )
 
-    test_user_answer_request_2 = owner_api_client.post(f'{API_URL}/users_answers/', 
-                                                       test_user_answer_payload_2)
+    test_user_answer_request_2 = owner_api_client.post(
+        f'{API_URL}/users_answers/', 
+        test_user_answer_payload_2.model_dump()
+    )
     assert test_user_answer_request_2.status_code == 201
     user_answer_2 = UsersAnswer.objects.get(pk=test_user_answer_request_2.data['id'])
     assert user_answer_2

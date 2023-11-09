@@ -56,6 +56,10 @@ class QuestionWriteModelSerializer(serializers.ModelSerializer):
 class QuizReadModelSerializer(serializers.ModelSerializer):
     creator = UserSerializer()
     questions = QuestionReadModelSerializer(many=True)
+    rating = serializers.SerializerMethodField()
+
+    def get_rating(self, obj: Quiz):
+        return obj.rating
 
     class Meta:
         model = Quiz

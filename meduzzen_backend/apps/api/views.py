@@ -3,8 +3,7 @@ import logging
 from companies.models import CompanyMembers
 from companies.serializers import CompanyMembersReadModelSerializer
 from django.contrib.auth import get_user_model
-from django.db.models import Avg, FloatField, OuterRef, Subquery, Value
-from django.db.models.functions import Coalesce
+from django.db.models import Avg, OuterRef, Subquery
 from quizzes.enums import UserQuizStatus
 from quizzes.models import QuizResult
 from rest_framework import mixins, status
@@ -14,7 +13,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from utils.analytics import set_start_end_date
+from api.serializers import AnalyticsSerializer
 
 from .permissions import IsAbleToDeleteUser
 from .serializers import UserSerializer
@@ -89,25 +88,27 @@ class UserModelViewSet(GenericViewSet,
             return Response({'detail': 'Not found'}, status.HTTP_404_NOT_FOUND)
     
     # Get list of average scores of all users with dynamics over time
-    @action(detail=False, url_path='analytics', methods=['get'])
-    def get_users_analytics(self, request):
-        months_count = request.query_params.get('months')
+    @action(detail=False, url_path='analytics', methods=['post'])
+    def get_users_analytics(self, request): 
+        serializer = AnalyticsSerializer(data=request.data)
 
-        time_interval = set_start_end_date(months_count)
+        if serializer.is_valid():
+            start_date = serializer.validated_data['start_date']
+            end_date = serializer.validated_data['end_date']
 
-        avg_scores_subquery = QuizResult.objects.filter(
-            user=OuterRef('id'),
-            updated_at__range=time_interval,
-            status=UserQuizStatus.COMPLETED.value
-        ).values('user').annotate(
-            avg_score=Coalesce(Avg('score'), Value(0), output_field=FloatField())
-        ).values('avg_score')[:1]
+            avg_scores_subquery = QuizResult.objects.filter(
+                user=OuterRef('id'),
+                updated_at__range=(start_date, end_date),
+                status=UserQuizStatus.COMPLETED.value
+            ).values('user').annotate(
+                average_score=Avg('score')
+            ).values('average_score')[:1]
 
-        # Create final queryset
-        queryset = User.objects.annotate(
-            avg_score=Coalesce(
-                Subquery(avg_scores_subquery), Value(0), output_field=FloatField()
-            )
-        ).values('id', 'avg_score')
+            # Create final queryset
+            queryset = User.objects.annotate(
+                average_score=Subquery(avg_scores_subquery)
+            ).values('id', 'average_score')
 
-        return Response(queryset)
+            return Response(queryset)
+        else:
+            return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)

@@ -37,11 +37,6 @@ class UsersRequestsModelViewSet(ModelViewSet):
                                        IsUsersCompany ]
         return super().get_permissions()
     
-    # def get_serializer_context(self):
-    #     context = super().get_serializer_context()
-    #     context.update({"request": self.request})
-    #     return context
-    
     # Get current user list of requests to companies
     @action(detail=False, url_path='me', methods=['get'])
     def get_users_requests(self, request):

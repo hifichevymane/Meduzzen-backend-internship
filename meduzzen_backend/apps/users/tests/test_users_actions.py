@@ -4,14 +4,16 @@ import pytest
 from api.tests.fixtures.client import api_client, API_URL
 from companies.tests.fixtures.companies import (
     test_company,
-    test_company_member,
+    test_company_members,
     test_company_invite)
+from companies.tests.pydantic.companies import CompanyInviteUpdateStatusBody
 
 from users.tests.fixtures.users import (
     test_users, 
     test_owner, 
     test_user_request, 
     test_invites_payloads)
+from users.tests.pydantic.users import UserRequestBody, UserRequestUpdateStatusBody
 
 from .fixtures.user_client import user_api_client
 
@@ -25,14 +27,16 @@ from users.enums import UsersRequestStatus
 # Test user accept invite from company
 @pytest.mark.django_db
 def test_accept_invite(user_api_client, test_company_invite):
-    test_accept_request_data = {
-        'status': CompanyInvitationStatus.ACCEPTED.value
-    }
+    test_accept_request_data = CompanyInviteUpdateStatusBody(
+        status=CompanyInvitationStatus.ACCEPTED.value
+    )
 
     invite_id = test_company_invite.id
 
-    test_accept_request = user_api_client.patch(f'{API_URL}/company_invites/{invite_id}/',
-                                                test_accept_request_data)
+    test_accept_request = user_api_client.patch(
+        f'{API_URL}/company_invites/{invite_id}/',
+        test_accept_request_data.model_dump()
+    )
     assert test_accept_request.data['status'] == CompanyInvitationStatus.ACCEPTED.value
     assert test_accept_request.status_code == 200
 
@@ -40,14 +44,16 @@ def test_accept_invite(user_api_client, test_company_invite):
 # Test user decline invite from company
 @pytest.mark.django_db
 def test_decline_invite(user_api_client, test_company_invite):
-    test_accept_request_data = {
-        'status': CompanyInvitationStatus.DECLINED.value
-    }
+    test_accept_request_data = CompanyInviteUpdateStatusBody(
+        status=CompanyInvitationStatus.DECLINED.value
+    )
 
     invite_id = test_company_invite.id
 
-    test_accept_request = user_api_client.patch(f'{API_URL}/company_invites/{invite_id}/', 
-                                                test_accept_request_data)
+    test_accept_request = user_api_client.patch(
+        f'{API_URL}/company_invites/{invite_id}/', 
+        test_accept_request_data.model_dump()
+    )
     assert test_accept_request.data['status'] == CompanyInvitationStatus.DECLINED.value
     assert test_accept_request.status_code == 200
 
@@ -55,12 +61,12 @@ def test_decline_invite(user_api_client, test_company_invite):
 # Test send request to company from user
 @pytest.mark.django_db
 def test_send_request_to_company(user_api_client, test_company):
-    test_user_request_data = {
-        'company': test_company.id,
-    }
+    test_user_request_data = UserRequestBody(company=test_company.id)
 
-    test_user_request = user_api_client.post(f'{API_URL}/users_requests/', 
-                                             test_user_request_data)
+    test_user_request = user_api_client.post(
+        f'{API_URL}/users_requests/', 
+        test_user_request_data.model_dump()
+    )
     
     assert test_user_request.status_code == 201
     assert UsersRequests.objects.get(pk=test_user_request.data['id'])
@@ -68,21 +74,25 @@ def test_send_request_to_company(user_api_client, test_company):
 
 @pytest.mark.django_db
 def test_cancel_request_to_company(user_api_client, test_user_request):
-    test_cancel_request_data = {
-        'status': UsersRequestStatus.CANCELED.value
-    }
+    test_cancel_request_data = UserRequestUpdateStatusBody(
+        status=UsersRequestStatus.CANCELED.value
+    )
 
     request_id = test_user_request.id
 
-    test_cancel_request = user_api_client.patch(f'{API_URL}/users_requests/{request_id}/',
-                                                test_cancel_request_data)
+    test_cancel_request = user_api_client.patch(
+        f'{API_URL}/users_requests/{request_id}/',
+        test_cancel_request_data.model_dump()
+    )
     assert test_cancel_request.data['status'] == UsersRequestStatus.CANCELED.value
     assert test_cancel_request.status_code == 200
 
 
 # Test user leave the company
 @pytest.mark.django_db
-def test_leave_company(user_api_client, test_company_member):
+def test_leave_company(user_api_client, test_company_members):
+    test_company_member = test_company_members[0]
+
     leave_company_request = user_api_client.delete(f'{API_URL}/company_members/{test_company_member.id}/')
     
     assert leave_company_request.status_code == 204
@@ -95,27 +105,27 @@ def test_leave_company(user_api_client, test_company_member):
 def test_send_invite_from_not_owner(user_api_client, test_company, test_invites_payloads):
     test_invite_payload = test_invites_payloads[1]
 
-    test_invite_request = user_api_client.post(f'{API_URL}/company_invites/', test_invite_payload)
+    test_invite_request = user_api_client.post(
+        f'{API_URL}/company_invites/', test_invite_payload
+    )
     assert test_invite_request.status_code == 403
 
 
 @pytest.mark.django_db
-def test_send_request_from_company_member(user_api_client, test_company, test_company_member):
-    user_request_payload = {
-        'company': test_company.id
-    }
+def test_send_request_from_company_member(user_api_client, test_company, test_company_members):
+    user_request_payload = UserRequestBody(
+        company=test_company.id
+    )
 
-    request = user_api_client.post(f'{API_URL}/users_requests/', user_request_payload)
+    request = user_api_client.post(f'{API_URL}/users_requests/', user_request_payload.model_dump())
     assert request.status_code == 403
 
 
 @pytest.mark.django_db
 def test_send_request_twice(user_api_client, test_user_request, test_company):
-    request_payload = {
-        'company': test_company.id
-    }
+    request_payload = UserRequestBody(company=test_company.id)
 
-    request = user_api_client.post(f'{API_URL}/users_requests/', request_payload)
+    request = user_api_client.post(f'{API_URL}/users_requests/', request_payload.model_dump())
     assert request.status_code == 403
 
 
