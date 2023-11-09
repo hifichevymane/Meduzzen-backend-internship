@@ -1,6 +1,8 @@
 from api.models import TimeStampedModel
 from django.contrib.auth import get_user_model
 from django.db import models
+from quizzes.enums import UserQuizStatus
+from quizzes.models import QuizResult
 
 from .enums import CompanyInvitationStatus, CompanyMemberRole, Visibility
 
@@ -47,6 +49,19 @@ class CompanyMembers(TimeStampedModel):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     role = models.CharField(default=CompanyMemberRole.MEMBER.value,
                             choices=CompanyMemberRole.choices())
+    
+    @staticmethod
+    def get_last_taken_quiz_times(company_id: models.ForeignKey):
+        last_quiz_time_subquery = QuizResult.objects.filter(
+            user=models.OuterRef('user_id'),
+            status=UserQuizStatus.COMPLETED.value
+        ).order_by('-updated_at').values('updated_at')[:1]
+
+        queryset = CompanyMembers.objects.filter(company_id=company_id).annotate(
+            last_taken_quiz_time=models.Subquery(last_quiz_time_subquery)
+        ).values('user', 'last_taken_quiz_time')
+
+        return queryset
 
     class Meta:
         verbose_name = "Company Member"

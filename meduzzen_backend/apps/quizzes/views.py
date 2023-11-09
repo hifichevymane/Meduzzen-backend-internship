@@ -3,7 +3,6 @@ from api.permissions import IsAbleToGetLastCompletionTime
 from api.serializers import AnalyticsSerializer
 from companies.models import Company
 from django.contrib.auth import get_user_model
-from django.db.models import Avg, OuterRef, Subquery
 from django.http import FileResponse
 from rest_framework import mixins, status
 from rest_framework.decorators import action
@@ -11,7 +10,6 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
 
-from quizzes.enums import UserQuizStatus
 from quizzes.models import AnswerOption, Question, Quiz, QuizResult, UsersAnswer
 from quizzes.permissions import (
     DidUserCompletedTheSameQuiz,
@@ -75,19 +73,11 @@ class QuizModelViewSet(ModelViewSet):
     @action(detail=True, url_path='last_completions_time', 
             methods=['get'], permission_classes=(IsAbleToGetLastCompletionTime, ))
     def get_the_last_completions_time_of_quizzes(self, request, pk=None):
-        last_result_subquery = QuizResult.objects.filter(
-            quiz=OuterRef('pk')
-        ).order_by('-updated_at').values('updated_at')[:1]
-
-        # Get all quizzes' ids with the last completion time 
-        queryset = Quiz.objects.filter(company_id=pk).annotate(
-            last_taken_quiz_time=Subquery(last_result_subquery)
-        ).values('id', 'last_taken_quiz_time')
-
+        queryset = Quiz.get_last_completions_time_of_quizzes(company_id=pk)
         return Response(queryset)
     
     # Get the analytics of the quiz by quiz_id
-    @action(detail=True, url_path='analytics', methods=['get'])
+    @action(detail=True, url_path='analytics', methods=['post'])
     def get_quiz_analytics(self, request, pk=None):
         # Get start_date and end_date
         serializer = AnalyticsSerializer(data=request.data)
@@ -96,19 +86,15 @@ class QuizModelViewSet(ModelViewSet):
             start_date = serializer.validated_data['start_date']
             end_date = serializer.validated_data['end_date']
 
-            # Filter by QuizResult model fields
-            queryset = Quiz.objects.filter(
-                quizresult__updated_at__range=(start_date, end_date),
-                quizresult__status=UserQuizStatus.COMPLETED.value,
-                id=pk
-            ).annotate(
-                average_score=Avg('quizresult__score') # Annotate new field with avarage score
-            ).values('id', 'average_score')
+            try:
+                quiz = Quiz.objects.get(id=pk)
+                average_score = quiz.get_quiz_analytics(start_date, end_date)
 
-            if not queryset:
-                return Response({'detail': 'No quiz results were found'}, status.HTTP_404_NOT_FOUND)
-            
-            return Response(queryset)
+                if not average_score:
+                    return Response({'detail': 'No quiz results were found'}, status.HTTP_404_NOT_FOUND)
+                return Response(average_score)
+            except Quiz.DoesNotExist:
+                return Response({'detail': f'No quiz with pk {pk} was found'}, status.HTTP_404_NOT_FOUND)
         else:
             return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
     
@@ -121,15 +107,7 @@ class QuizModelViewSet(ModelViewSet):
             start_date = serializer.validated_data['start_date']
             end_date = serializer.validated_data['end_date']
 
-            # quizresult__score - field in QuizResult model to calculate average score
-            # Filter by QuizResult model fields
-            queryset = Quiz.objects.filter(
-                quizresult__updated_at__range=(start_date, end_date),
-                quizresult__status=UserQuizStatus.COMPLETED.value
-            ).annotate(
-                average_score=Avg('quizresult__score')
-            ).values('id', 'average_score')
-
+            queryset = Quiz.get_all_quizzes_analytics(start_date, end_date)
             return Response(queryset)
         else:
             return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
@@ -142,19 +120,7 @@ class QuizModelViewSet(ModelViewSet):
             start_date = serializer.validated_data['start_date']
             end_date = serializer.validated_data['end_date']
 
-            avg_score_subquery = QuizResult.objects.filter(
-                updated_at__range=(start_date, end_date),
-                user_id=pk,
-                status=UserQuizStatus.COMPLETED.value,
-                quiz=OuterRef('id')
-            ).values('quiz').annotate(
-                average_score=Avg('score')
-            ).values('average_score')[:1]
-
-            queryset = Quiz.objects.all().values('id').annotate(
-                average_score=Subquery(avg_score_subquery)
-            ).values('id', 'average_score')
-
+            queryset = Quiz.get_selected_user_analytics(pk, start_date, end_date)
             return Response(queryset)
         else:
             return Response(serializer.errors, status.HTTP_404_NOT_FOUND)

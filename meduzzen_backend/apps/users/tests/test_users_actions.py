@@ -6,14 +6,14 @@ from companies.tests.fixtures.companies import (
     test_company,
     test_company_members,
     test_company_invite)
-from companies.tests.pydantic.companies import CompanyInviteUpdateStatusBody
+from companies.tests.schemas.companies import CompanyInviteUpdateStatusRequestBodySchema
 
 from users.tests.fixtures.users import (
     test_users, 
     test_owner, 
     test_user_request, 
     test_invites_payloads)
-from users.tests.pydantic.users import UserRequestBody, UserRequestUpdateStatusBody
+from users.tests.schemas.users import UserRequestBodySchema, UserRequestUpdateStatusBodySchema
 
 from .fixtures.user_client import user_api_client
 
@@ -27,7 +27,7 @@ from users.enums import UsersRequestStatus
 # Test user accept invite from company
 @pytest.mark.django_db
 def test_accept_invite(user_api_client, test_company_invite):
-    test_accept_request_data = CompanyInviteUpdateStatusBody(
+    test_accept_request_data = CompanyInviteUpdateStatusRequestBodySchema(
         status=CompanyInvitationStatus.ACCEPTED.value
     )
 
@@ -44,7 +44,7 @@ def test_accept_invite(user_api_client, test_company_invite):
 # Test user decline invite from company
 @pytest.mark.django_db
 def test_decline_invite(user_api_client, test_company_invite):
-    test_accept_request_data = CompanyInviteUpdateStatusBody(
+    test_accept_request_data = CompanyInviteUpdateStatusRequestBodySchema(
         status=CompanyInvitationStatus.DECLINED.value
     )
 
@@ -61,7 +61,7 @@ def test_decline_invite(user_api_client, test_company_invite):
 # Test send request to company from user
 @pytest.mark.django_db
 def test_send_request_to_company(user_api_client, test_company):
-    test_user_request_data = UserRequestBody(company=test_company.id)
+    test_user_request_data = UserRequestBodySchema(company=test_company.id)
 
     test_user_request = user_api_client.post(
         f'{API_URL}/users_requests/', 
@@ -74,7 +74,7 @@ def test_send_request_to_company(user_api_client, test_company):
 
 @pytest.mark.django_db
 def test_cancel_request_to_company(user_api_client, test_user_request):
-    test_cancel_request_data = UserRequestUpdateStatusBody(
+    test_cancel_request_data = UserRequestUpdateStatusBodySchema(
         status=UsersRequestStatus.CANCELED.value
     )
 
@@ -113,7 +113,7 @@ def test_send_invite_from_not_owner(user_api_client, test_company, test_invites_
 
 @pytest.mark.django_db
 def test_send_request_from_company_member(user_api_client, test_company, test_company_members):
-    user_request_payload = UserRequestBody(
+    user_request_payload = UserRequestBodySchema(
         company=test_company.id
     )
 
@@ -123,7 +123,7 @@ def test_send_request_from_company_member(user_api_client, test_company, test_co
 
 @pytest.mark.django_db
 def test_send_request_twice(user_api_client, test_user_request, test_company):
-    request_payload = UserRequestBody(company=test_company.id)
+    request_payload = UserRequestBodySchema(company=test_company.id)
 
     request = user_api_client.post(f'{API_URL}/users_requests/', request_payload.model_dump())
     assert request.status_code == 403

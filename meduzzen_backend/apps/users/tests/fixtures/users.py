@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 
 from model_bakery import baker
 from users.models import UsersRequests
-from companies.tests.pydantic.companies import CompanyInviteBody
+from companies.tests.schemas.companies import CompanyInviteRequestBodySchema
 
 User = get_user_model()
 
@@ -58,17 +58,17 @@ def test_user_request(test_users, test_company):
 def test_invites_payloads(test_users, test_company):
     test_invited_user1, test_invited_user2, test_invited_user3 = test_users
 
-    test_invite_user1_payload = CompanyInviteBody(
+    test_invite_user1_payload = CompanyInviteRequestBodySchema(
         user=test_invited_user1.id,
         company=test_company.id
     ).model_dump()
 
-    test_invite_user2_payload = CompanyInviteBody(
+    test_invite_user2_payload = CompanyInviteRequestBodySchema(
         user=test_invited_user2.id,
         company=test_company.id
     ).model_dump()
 
-    test_invite_user3_payload = CompanyInviteBody(
+    test_invite_user3_payload = CompanyInviteRequestBodySchema(
         user=test_invited_user3.id,
         company=test_company.id
     ).model_dump()

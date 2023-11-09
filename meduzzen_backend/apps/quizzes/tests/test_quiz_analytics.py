@@ -1,9 +1,7 @@
 # ruff: noqa: F401 F811 F403
-import time
-
 import pytest
 from api.tests.fixtures.client import API_URL, api_client
-from api.tests.pydantic.analytics import AnalyticsBody
+from api.tests.schemas.analytics import AnalyticsRequestBodySchema
 from companies.tests.fixtures.companies import test_company
 from companies.tests.fixtures.companies_client import owner_api_client, test_owner
 from model_bakery import baker
@@ -51,9 +49,6 @@ def test_get_list_last_completions_time_of_quizzes(test_quizzes, owner_api_clien
     request_data = test_request_1.data
     assert request_data[0]['last_taken_quiz_time'] == test_quiz_1_result_1.updated_at
     assert request_data[1]['last_taken_quiz_time'] == test_quiz_2_result_1.updated_at
-
-    # Wait to make another request
-    time.sleep(3)
 
     test_quiz_1_result_2 = baker.make(
         QuizResult, quiz=test_quiz_1, 
@@ -103,7 +98,7 @@ def test_get_quizzes_average_scores(test_quizzes, owner_api_client):
     test_quiz_2_average_score = (test_quiz_2_result_1.score + test_quiz_2_result_2.score) / 2
 
     # Make a request
-    test_request_1_body = AnalyticsBody(
+    test_request_1_body = AnalyticsRequestBodySchema(
         start_date=test_quiz_1_result_1.updated_at,
         end_date=test_quiz_2_result_2.updated_at
     )
@@ -139,7 +134,7 @@ def test_get_quizzes_average_scores(test_quizzes, owner_api_client):
         status=UserQuizStatus.COMPLETED.value 
     )
 
-    test_request_2_body = AnalyticsBody(
+    test_request_2_body = AnalyticsRequestBodySchema(
         start_date=test_quiz_1_result_3.updated_at,
         end_date=test_quiz_2_result_4.updated_at
     )

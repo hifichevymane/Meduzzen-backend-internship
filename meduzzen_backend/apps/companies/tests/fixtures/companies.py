@@ -11,7 +11,7 @@ from companies.models import CompanyMembers, Company, CompanyInvitations
 @pytest.fixture
 def test_company(test_owner):
     # Create a company
-    test_owner_company : Company = baker.make(Company, owner=test_owner)
+    test_owner_company: Company = baker.make(Company, owner=test_owner)
 
     return test_owner_company
 
@@ -19,7 +19,7 @@ def test_company(test_owner):
 @pytest.fixture
 def test_company_invite(test_users, test_company):
     test_user = test_users[0]
-    company_request : CompanyInvitations = baker.make(CompanyInvitations, user=test_user, 
+    company_request: CompanyInvitations = baker.make(CompanyInvitations, user=test_user, 
                                  company=test_company)
 
     return company_request
@@ -29,12 +29,12 @@ def test_company_invite(test_users, test_company):
 def test_company_members(test_users, test_company):
     test_user_1, test_user_2, = test_users[0], test_users[1]
 
-    test_company_member_1 : CompanyMembers = baker.make(
+    test_company_member_1: CompanyMembers = baker.make(
         CompanyMembers, 
         user=test_user_1, 
         company=test_company
     )
-    test_company_member_2 : CompanyMembers = baker.make(
+    test_company_member_2: CompanyMembers = baker.make(
         CompanyMembers, 
         user=test_user_2, 
         company=test_company

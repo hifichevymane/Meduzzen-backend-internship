@@ -6,13 +6,19 @@ from companies.tests.fixtures.companies_client import owner_api_client, test_own
 
 from quizzes.models import AnswerOption, Question, Quiz, QuizResult, UserQuizStatus, UsersAnswer
 from quizzes.tests.fixtures.quizzes import test_answer_options, test_questions, test_quizzes
-from quizzes.tests.pydantic.quizzes import AnswerOptionBody, QuestionBody, QuizBody, QuizResultBody, UserAnswerBody
+from quizzes.tests.schemas.quizzes import (
+    AnswerOptionRequestBodySchema,
+    QuestionRequestBodySchema,
+    QuizRequestBodySchema,
+    QuizResultRequestBodySchema,
+    UserAnswerRequestBodySchema,
+)
 
 
 @pytest.mark.parametrize('option_text', ['Yes', 'No'])
 @pytest.mark.django_db
 def test_create_answer_options(option_text, owner_api_client):
-    test_option = AnswerOptionBody(text=option_text)
+    test_option = AnswerOptionRequestBodySchema(text=option_text)
 
     request = owner_api_client.post(f"{API_URL}/answer_options/", test_option.model_dump())
     assert request.status_code == 201
@@ -23,7 +29,7 @@ def test_create_answer_options(option_text, owner_api_client):
 def test_create_question(owner_api_client, test_answer_options):
     test_option_1, test_option_2 = test_answer_options
 
-    test_question = QuestionBody(
+    test_question = QuestionRequestBodySchema(
         text="Are you gay?",
         options=[test_option_1.id, test_option_2.id],
         answer=[test_option_1.id,]
@@ -37,7 +43,7 @@ def test_create_question(owner_api_client, test_answer_options):
 @pytest.mark.django_db
 def test_create_quiz(owner_api_client, test_questions, test_company):
     test_question_1, test_question_2 = test_questions
-    test_quiz_payload = QuizBody(
+    test_quiz_payload = QuizRequestBodySchema(
         company=test_company.id,
         title="Gay test",
         description="Gay test",
@@ -53,7 +59,7 @@ def test_create_quiz(owner_api_client, test_questions, test_company):
 def test_undergo_quiz(owner_api_client, test_quizzes, test_questions, test_answer_options):
     test_quiz = test_quizzes[0]
 
-    start_test_request_payload = QuizResultBody(quiz=test_quiz.id)
+    start_test_request_payload = QuizResultRequestBodySchema(quiz=test_quiz.id)
 
     # Send POST request to start the quiz
     start_quiz_request = owner_api_client.post(
@@ -70,7 +76,7 @@ def test_undergo_quiz(owner_api_client, test_quizzes, test_questions, test_answe
     test_question_1, test_question_2 = test_questions
     test_answer_option_1 = test_answer_options[0]
 
-    test_user_answer_payload_1 = UserAnswerBody(
+    test_user_answer_payload_1 = UserAnswerRequestBodySchema(
         quiz=test_quiz.id,
         question=test_question_1.id,
         answer=[test_answer_option_1.id],
@@ -88,7 +94,7 @@ def test_undergo_quiz(owner_api_client, test_quizzes, test_questions, test_answe
     assert user_answer_1
     assert user_answer_1.is_correct
 
-    test_user_answer_payload_2 = UserAnswerBody(
+    test_user_answer_payload_2 = UserAnswerRequestBodySchema(
         quiz=test_quiz.id,
         question=test_question_2.id,
         answer=[test_answer_option_1.id],

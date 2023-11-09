@@ -10,15 +10,15 @@ from quizzes.models import AnswerOption, Question, Quiz, QuizResult
 
 @pytest.fixture
 def test_answer_options():
-    test_option_1 : AnswerOption = baker.make(AnswerOption, text='Yes')
-    test_option_2 : AnswerOption = baker.make(AnswerOption, text='No')
+    test_option_1: AnswerOption = baker.make(AnswerOption, text='Yes')
+    test_option_2: AnswerOption = baker.make(AnswerOption, text='No')
 
     return test_option_1, test_option_2
 
 
 @pytest.fixture
 def test_questions(test_answer_options, test_owner):
-    test_question_1 : Question = baker.make(
+    test_question_1: Question = baker.make(
         Question, 
         text='Are you gay?', 
         options=test_answer_options, 
@@ -26,7 +26,7 @@ def test_questions(test_answer_options, test_owner):
         creator=test_owner
     )
     
-    test_question_2 : Question = baker.make(
+    test_question_2: Question = baker.make(
         Question,
         text='Do you love Death Grips?',
         options=test_answer_options, 
@@ -39,7 +39,7 @@ def test_questions(test_answer_options, test_owner):
 
 @pytest.fixture
 def test_quizzes(test_questions, test_owner, test_company):
-    test_quiz_1 : Quiz = baker.make(
+    test_quiz_1: Quiz = baker.make(
         Quiz, 
         creator=test_owner,
         company=test_company,
@@ -47,7 +47,7 @@ def test_quizzes(test_questions, test_owner, test_company):
         question_amount=len(test_questions)
     )
 
-    test_quiz_2 : Quiz = baker.make(
+    test_quiz_2: Quiz = baker.make(
         Quiz, 
         creator=test_owner,
         company=test_company,
@@ -63,7 +63,7 @@ def test_quiz_results(test_company, test_users, test_quizzes):
     test_user = test_users[0]
     test_quiz_1, test_quiz_2 = test_quizzes
 
-    test_quiz_result_1 : QuizResult = baker.make(
+    test_quiz_result_1: QuizResult = baker.make(
         QuizResult,
         company=test_company,
         user=test_user,
@@ -72,7 +72,7 @@ def test_quiz_results(test_company, test_users, test_quizzes):
         score=2
     )
 
-    test_quiz_result_2 : QuizResult = baker.make(
+    test_quiz_result_2: QuizResult = baker.make(
         QuizResult,
         company=test_company,
         user=test_user,

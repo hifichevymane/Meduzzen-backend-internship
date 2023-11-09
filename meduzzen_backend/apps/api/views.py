@@ -3,8 +3,6 @@ import logging
 from companies.models import CompanyMembers
 from companies.serializers import CompanyMembersReadModelSerializer
 from django.contrib.auth import get_user_model
-from django.db.models import Avg, OuterRef, Subquery
-from quizzes.enums import UserQuizStatus
 from quizzes.models import QuizResult
 from rest_framework import mixins, status
 from rest_framework.decorators import action, api_view
@@ -89,26 +87,14 @@ class UserModelViewSet(GenericViewSet,
     
     # Get list of average scores of all users with dynamics over time
     @action(detail=False, url_path='analytics', methods=['post'])
-    def get_users_analytics(self, request): 
+    def users_analytics(self, request): 
         serializer = AnalyticsSerializer(data=request.data)
 
         if serializer.is_valid():
             start_date = serializer.validated_data['start_date']
             end_date = serializer.validated_data['end_date']
 
-            avg_scores_subquery = QuizResult.objects.filter(
-                user=OuterRef('id'),
-                updated_at__range=(start_date, end_date),
-                status=UserQuizStatus.COMPLETED.value
-            ).values('user').annotate(
-                average_score=Avg('score')
-            ).values('average_score')[:1]
-
-            # Create final queryset
-            queryset = User.objects.annotate(
-                average_score=Subquery(avg_scores_subquery)
-            ).values('id', 'average_score')
-
+            queryset = QuizResult.get_all_users_analytics(start_date, end_date)
             return Response(queryset)
         else:
             return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)

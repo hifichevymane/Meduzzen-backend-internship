@@ -9,7 +9,7 @@ from users.tests.fixtures.user_client import user_api_client
 from users.tests.fixtures.users import test_users
 
 from api.tests.fixtures.client import API_URL, api_client
-from api.tests.pydantic.analytics import AnalyticsBody
+from api.tests.schemas.analytics import AnalyticsRequestBodySchema
 
 
 @pytest.mark.django_db
@@ -43,7 +43,7 @@ def test_user_analytics(user_api_client, test_users, test_quizzes):
 
     test_user_2_average_score = (test_user_2_result_1.score + test_user_2_result_2.score) / 2
 
-    test_request_1_body = AnalyticsBody(
+    test_request_1_body = AnalyticsRequestBodySchema(
         start_date=test_user_1_result_1.updated_at,
         end_date=test_user_2_result_2.updated_at
     )
@@ -82,7 +82,7 @@ def test_user_analytics(user_api_client, test_users, test_quizzes):
 
     test_user_2_average_score = (test_user_2_result_3.score + test_user_2_result_4.score) / 2
 
-    test_request_2_body = AnalyticsBody(
+    test_request_2_body = AnalyticsRequestBodySchema(
         start_date=test_user_1_result_3.updated_at,
         end_date=test_user_2_result_4.updated_at
     )
@@ -128,7 +128,7 @@ def test_selected_user_analytics(user_api_client, test_users, test_quizzes):
 
     test_quiz_2_avg_score = (test_quiz_2_result_1.score + test_quiz_2_result_2.score) / 2
 
-    test_request_1_body = AnalyticsBody(
+    test_request_1_body = AnalyticsRequestBodySchema(
         start_date=test_quiz_1_result_1.updated_at,
         end_date=test_quiz_2_result_2.updated_at
     )
@@ -170,7 +170,7 @@ def test_selected_user_analytics(user_api_client, test_users, test_quizzes):
 
     test_quiz_2_avg_score = (test_quiz_2_result_3.score + test_quiz_2_result_4.score) / 2
 
-    test_request_2_body = AnalyticsBody(
+    test_request_2_body = AnalyticsRequestBodySchema(
         start_date=test_quiz_1_result_3.updated_at,
         end_date=test_quiz_2_result_4.updated_at
     )
