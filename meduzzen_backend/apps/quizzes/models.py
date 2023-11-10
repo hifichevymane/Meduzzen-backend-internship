@@ -42,14 +42,35 @@ class QuizResult(TimeStampedModel):
         return f'{self.quiz} - {self.user} - {self.score} score'
 
 
+class Question(TimeStampedModel):
+    quiz = models.ForeignKey('Quiz', on_delete=models.CASCADE)
+    creator = models.ForeignKey(User, on_delete=models.CASCADE)
+    text = models.TextField(blank=False, null=False)
+    options = models.ManyToManyField('AnswerOption', related_name='options')
+    answer = models.ManyToManyField('AnswerOption', related_name='answers')
+
+    class Meta:
+        verbose_name = 'Question'
+        verbose_name_plural = 'Questions'
+
+    def __str__(self) -> str:
+        return self.text
+
+
 class Quiz(TimeStampedModel):
     creator = models.ForeignKey(User, on_delete=models.CASCADE)
     company = models.ForeignKey('companies.Company', on_delete=models.CASCADE)
     title = models.CharField(max_length=80, blank=False, null=False)
     description = models.TextField(blank=False, null=False)
-    frequency = models.IntegerField(default=0, blank=False, null=False)
     questions = models.ManyToManyField('Question', related_name='quizzes', blank=True)
-    question_amount = models.IntegerField(blank=False, null=False)
+
+    @property
+    def question_amount(self):
+        return len(Question.objects.filter(quiz=self))
+
+    @property
+    def frequency(self):
+        return len(QuizResult.objects.filter(quiz=self))
 
     # Get the average score of a quiz across entire system
     @property
@@ -109,20 +130,6 @@ class Quiz(TimeStampedModel):
 
     def __str__(self) -> str:
         return self.title
-
-
-class Question(TimeStampedModel):
-    creator = models.ForeignKey(User, on_delete=models.CASCADE)
-    text = models.TextField(blank=False, null=False)
-    options = models.ManyToManyField('AnswerOption', related_name='options')
-    answer = models.ManyToManyField('AnswerOption', related_name='answers')
-
-    class Meta:
-        verbose_name = 'Question'
-        verbose_name_plural = 'Questions'
-
-    def __str__(self) -> str:
-        return self.text
 
 
 class AnswerOption(TimeStampedModel):

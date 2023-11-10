@@ -55,8 +55,12 @@ class IsAbleToEditAnswerOptionQuestion(BasePermission):
 class DoesUserAnswerExistAlready(BasePermission):
     def has_permission(self, request, view):
         question_id = request.data.get('question')
+        quiz_result_id = request.data.get('quiz_result_id')
         user = request.user
-        return not UsersAnswer.objects.filter(question_id=question_id, user=user).exists()
+        return not UsersAnswer.objects.filter(
+            question_id=question_id, user=user,
+            quiz_result_id=quiz_result_id
+        ).exists()
 
 
 # Check if user has already the same quiz with pending status(he is still undergoing it)
