@@ -8,7 +8,7 @@ from companies.models import Company, CompanyInvitations, CompanyMembers, Compan
 
 User = get_user_model()
 
-class CompanyModelSerializer(serializers.ModelSerializer):
+class CompanyWriteModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = Company
         fields = '__all__'
@@ -26,8 +26,22 @@ class CompanyModelSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 
+class CompanyReadModelSerializer(serializers.ModelSerializer):
+    owner = UserSerializer()
+
+    class Meta:
+        model = Company
+        fields = '__all__'
+        read_only_fields = ('id', 'owner', 'created_at', 'updated_at')
+        extra_kwargs = {
+            'name': {'required': True},
+            'description': {'required': True}
+        }
+
+
 class CompanyInvitationsModelSerializer(serializers.ModelSerializer):
-    user = serializers.SerializerMethodField()
+    user = serializers.SerializerMethodField(method_name='get_user')
+    company = serializers.SerializerMethodField(method_name='get_company')
 
     class Meta:
         model = CompanyInvitations
@@ -41,6 +55,14 @@ class CompanyInvitationsModelSerializer(serializers.ModelSerializer):
         else: # Display all user info
             user = User.objects.get(pk=obj.user_id)
             return UserSerializer(user).data
+    
+    def get_company(self, obj):
+        # If method is POST we recieve user id
+        if self.context['request'].method == 'POST':
+            return obj.company_id
+        else: # Display all user info
+            company = Company.objects.get(pk=obj.company_id)
+            return CompanyReadModelSerializer(company).data
 
     def create(self, validated_data):
         company_id = self.context['request'].data.get('company')
@@ -61,20 +83,19 @@ class CompanyInvitationsModelSerializer(serializers.ModelSerializer):
         return super().update(instance, validated_data)
 
 
-class CompanyMembersModelSerializer(serializers.ModelSerializer):
-    user = serializers.SerializerMethodField()
+class CompanyMembersWriteModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CompanyMembers
+        fields = '__all__'
+
+
+class CompanyMembersReadModelSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
+    company = CompanyReadModelSerializer()
 
     class Meta:
         model = CompanyMembers
         fields = '__all__'
-    
-    def get_user(self, obj):
-        # If method is POST we recieve user id
-        if self.context['request'].method == 'POST':
-            return obj.user_id
-        else: # Display all user info
-            user = User.objects.get(pk=obj.user_id)
-            return UserSerializer(user).data
 
 
 class CompanyUserRatingModelSerializer(serializers.ModelSerializer):

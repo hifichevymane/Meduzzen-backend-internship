@@ -7,15 +7,21 @@ from rest_framework.viewsets import ModelViewSet
 
 from users.models import UsersRequests
 from users.permissions import DoesUserSendRequestToHisCompany, HasUserNotSentRequestYet
-from users.serializers import UsersRequestsSerializer
+from users.serializers import UsersRequestsReadSerializer, UsersRequestsWriteSerializer
 
 
 # Create your views here.
 # All the user to company requests
 class UsersRequestsModelViewSet(ModelViewSet):
     queryset = UsersRequests.objects.all()
-    serializer_class = UsersRequestsSerializer
     permission_classes = (IsAuthenticated, )
+    serializer_class = UsersRequestsReadSerializer
+
+    # Use different serializers to write/retrieve data
+    def get_serializer_class(self):
+        if self.action in ['create']:
+            return UsersRequestsWriteSerializer
+        return UsersRequestsReadSerializer
 
     # If user is able to edit a request
     def get_permissions(self):
@@ -38,7 +44,7 @@ class UsersRequestsModelViewSet(ModelViewSet):
         if not queryset:
             return Response({'detail': "No sent company requests"}, status.HTTP_404_NOT_FOUND)
         else:
-            serializer = self.serializer_class(queryset, many=True)
+            serializer = self.serializer_class(queryset, many=True, context={'request': request})
             return Response(serializer.data, status=status.HTTP_200_OK)
     
     # Get all company join requests from users

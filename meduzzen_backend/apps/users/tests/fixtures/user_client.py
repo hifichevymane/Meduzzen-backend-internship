@@ -1,11 +1,12 @@
 # ruff: noqa: F401 F811 I001 F403
 import pytest
 
+from rest_framework.test import APIClient
 from api.tests.fixtures.client import api_client, API_URL
 from users.tests.fixtures.users import test_users
 
 @pytest.fixture
-def user_api_client(api_client, test_users):
+def user_api_client(api_client, test_users) -> APIClient:
     test_user = test_users[0]
 
     test_owner_login_data = {

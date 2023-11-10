@@ -1,4 +1,6 @@
 from api.pagination import CommonPagination
+from api.permissions import IsAbleToGetLastCompletionTime
+from api.serializers import AnalyticsSerializer
 from companies.models import Company
 from django.contrib.auth import get_user_model
 from django.http import FileResponse
@@ -20,9 +22,11 @@ from quizzes.permissions import (
 )
 from quizzes.serializers import (
     AnswerOptionModelSerializer,
-    QuestionModelSerializer,
-    QuizModelSerializer,
+    QuestionReadModelSerializer,
+    QuestionWriteModelSerializer,
+    QuizReadModelSerializer,
     QuizResultModelSerializer,
+    QuizWriteModelSerializer,
     UsersAnswerModelSerializer,
 )
 from utils.caching import cache_user_answer
@@ -33,16 +37,25 @@ User = get_user_model()
 # Create your views here.
 class QuizModelViewSet(ModelViewSet):
     queryset = Quiz.objects.all()
-    serializer_class = QuizModelSerializer
+    serializer_class = QuizWriteModelSerializer
     permission_classes = (IsAuthenticated, )
     pagination_class = CommonPagination
 
+    def get_serializer_class(self):
+        if self.action in ['list', 'retrieve']:
+            return QuizReadModelSerializer
+        return QuizWriteModelSerializer
+
     def get_permissions(self):
+        permissions = super().get_permissions()
+
         if self.action == 'create':
             self.permission_classes = (IsAbleToCreateQuiz, )
+
         elif self.action in ['destroy', 'update', 'partial_update']:
             self.permission_classes = (IsAbleToEditDeleteQuiz, )
-        return super().get_permissions()
+        
+        return permissions
     
     # Get list of company quizzes by id
     @action(detail=True, url_path='company_quizzes', methods=['get'])
@@ -56,12 +69,72 @@ class QuizModelViewSet(ModelViewSet):
         else:
             serializer = self.serializer_class(queryset, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
+        
+    @action(detail=True, url_path='last_completions_time', 
+            methods=['get'], permission_classes=(IsAbleToGetLastCompletionTime, ))
+    def get_the_last_completions_time_of_quizzes(self, request, pk=None):
+        queryset = Quiz.get_last_completions_time_of_quizzes(company_id=pk)
+        return Response(queryset)
+    
+    # Get the analytics of the quiz by quiz_id
+    @action(detail=True, url_path='analytics', methods=['post'])
+    def get_quiz_analytics(self, request, pk=None):
+        # Get start_date and end_date
+        serializer = AnalyticsSerializer(data=request.data)
+
+        if serializer.is_valid():
+            start_date = serializer.validated_data['start_date']
+            end_date = serializer.validated_data['end_date']
+
+            try:
+                quiz = Quiz.objects.get(id=pk)
+                average_score = quiz.get_quiz_analytics(start_date, end_date)
+
+                if not average_score:
+                    return Response({'detail': 'No quiz results were found'}, status.HTTP_404_NOT_FOUND)
+                return Response(average_score)
+            except Quiz.DoesNotExist:
+                return Response({'detail': f'No quiz with pk {pk} was found'}, status.HTTP_404_NOT_FOUND)
+        else:
+            return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
+    
+    # Get all quizzes analytics
+    @action(detail=False, url_path='analytics', methods=['post'])
+    def get_all_quizzes_analytics(self, request):
+        serializer = AnalyticsSerializer(data=request.data)
+
+        if serializer.is_valid():
+            start_date = serializer.validated_data['start_date']
+            end_date = serializer.validated_data['end_date']
+
+            queryset = Quiz.get_all_quizzes_analytics(start_date, end_date)
+            return Response(queryset)
+        else:
+            return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=True, url_path='selected_user_analytics', methods=['post'])
+    def get_selected_user_analytics(self, request, pk=None):
+        serializer = AnalyticsSerializer(data=request.data)
+
+        if serializer.is_valid():
+            start_date = serializer.validated_data['start_date']
+            end_date = serializer.validated_data['end_date']
+
+            queryset = Quiz.get_selected_user_analytics(pk, start_date, end_date)
+            return Response(queryset)
+        else:
+            return Response(serializer.errors, status.HTTP_404_NOT_FOUND)
 
 
 class QuestionModelViewSet(ModelViewSet):
     queryset = Question.objects.all()
-    serializer_class = QuestionModelSerializer
+    serializer_class = QuestionWriteModelSerializer
     permission_classes = (IsAuthenticated, )
+
+    def get_serializer_class(self):
+        if self.action in ['list', 'retrieve']:
+            return QuestionReadModelSerializer
+        return QuestionWriteModelSerializer
 
     def get_permissions(self):
         if self.action in ['update', 'partial_update', 'destroy']:

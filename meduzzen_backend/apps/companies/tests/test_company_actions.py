@@ -5,96 +5,110 @@ from quizzes.tests.fixtures.quizzes import test_answer_options, test_questions, 
 from users.enums import UsersRequestStatus
 from users.tests.fixtures.user_client import user_api_client
 from users.tests.fixtures.users import test_invites_payloads, test_owner, test_user_request, test_users
+from users.tests.schemas.users import UserRequestBodySchema, UserRequestUpdateStatusBodySchema
 
 from companies.enums import CompanyInvitationStatus, CompanyMemberRole
 from companies.models import CompanyInvitations, CompanyMembers
-from companies.tests.fixtures.companies import test_company, test_company_invite, test_company_member
+from companies.tests.fixtures.companies import test_company, test_company_invite, test_company_members
+from companies.tests.schemas.companies import (
+    CompanyInviteUpdateStatusRequestBodySchema,
+    CompanyMemberChangeRoleRequestBodySchema,
+    CompanyMemberRatingRequestBodySchema,
+)
 
 from .fixtures.companies_client import owner_api_client
 
 
-# Test send invite
 @pytest.mark.django_db
 def test_send_invitation_to_the_user(owner_api_client, test_invites_payloads):
-    # Invite the user to the company
     test_invite_payload1, test_invite_payload2, test_invite_payload3 = test_invites_payloads
 
-    response_test_invite1 = owner_api_client.post(f'{API_URL}/company_invites/', 
-                                                  test_invite_payload1)
+    response_test_invite1 = owner_api_client.post(
+        f'{API_URL}/company_invites/', 
+        test_invite_payload1
+    )
     
     assert response_test_invite1.status_code == 201
     assert CompanyInvitations.objects.get(pk=response_test_invite1.data['id'])
 
-    response_test_invite2 = owner_api_client.post(f'{API_URL}/company_invites/', 
-                                                  test_invite_payload2)
+    response_test_invite2 = owner_api_client.post(
+        f'{API_URL}/company_invites/', 
+        test_invite_payload2
+    )
     
     assert response_test_invite2.status_code == 201
     assert CompanyInvitations.objects.get(pk=response_test_invite2.data['id'])
     
-    response_test_invite3 = owner_api_client.post(f'{API_URL}/company_invites/', 
-                                                  test_invite_payload3)
+    response_test_invite3 = owner_api_client.post(
+        f'{API_URL}/company_invites/', 
+        test_invite_payload3
+    )
     
     assert response_test_invite3.status_code == 201
     assert CompanyInvitations.objects.get(pk=response_test_invite3.data['id'])
 
 
-# Test invite revoke
 @pytest.mark.django_db
 def test_revoke_invite(owner_api_client, test_invites_payloads):
-    # Invite the user
     test_invite_user_payload = test_invites_payloads[0]
 
-    response_invite = owner_api_client.post(f'{API_URL}/company_invites/', 
-                                                test_invite_user_payload)
+    response_invite = owner_api_client.post(
+        f'{API_URL}/company_invites/', 
+        test_invite_user_payload
+    )
     assert response_invite.status_code == 201
     invite_id = response_invite.data['id']
 
-    test_revoke_request_payload = {
-        'status': CompanyInvitationStatus.REVOKED.value
-    }
+    test_revoke_request_payload = CompanyInviteUpdateStatusRequestBodySchema(
+        status=CompanyInvitationStatus.REVOKED.value
+    )
 
-    response_revoke = owner_api_client.patch(f'{API_URL}/company_invites/{invite_id}/',
-                                             test_revoke_request_payload)
+    response_revoke = owner_api_client.patch(
+        f'{API_URL}/company_invites/{invite_id}/',
+        test_revoke_request_payload.model_dump()
+    )
     
     assert response_revoke.status_code == 200
     assert response_revoke.data['status'] == CompanyInvitationStatus.REVOKED.value
 
 
-# Test Owner approving request to the company
 @pytest.mark.django_db
 def test_approve_request(owner_api_client, test_user_request):
-    # Test approve request
-    test_approve_request_data = {
-        'status': UsersRequestStatus.ACCEPTED.value
-    }
+    test_approve_request_data = UserRequestUpdateStatusBodySchema(
+        status=UsersRequestStatus.ACCEPTED.value
+    )
 
-    test_approve_request = owner_api_client.patch(f'{API_URL}/users_requests/{test_user_request.id}/',
-                                                  test_approve_request_data)
+    test_approve_request = owner_api_client.patch(
+        f'{API_URL}/users_requests/{test_user_request.id}/',
+        test_approve_request_data.model_dump()
+    )
 
     assert test_approve_request.status_code == 200
     assert test_approve_request.data['status'] == UsersRequestStatus.ACCEPTED.value
 
 
-# Test Owner declining request to the company
 @pytest.mark.django_db
 def test_reject_request(owner_api_client, test_user_request):
-    # Test reject request
-    test_approve_request_data = {
-        'status': UsersRequestStatus.REJECTED.value
-    }
+    test_approve_request_data = UserRequestUpdateStatusBodySchema(
+        status=UsersRequestStatus.REJECTED.value
+    )
 
-    test_approve_request = owner_api_client.patch(f'{API_URL}/users_requests/{test_user_request.id}/',
-                                                  test_approve_request_data)
+    test_approve_request = owner_api_client.patch(
+        f'{API_URL}/users_requests/{test_user_request.id}/',
+        test_approve_request_data.model_dump()
+    )
 
     assert test_approve_request.status_code == 200
     assert test_approve_request.data['status'] == UsersRequestStatus.REJECTED.value
 
 
-# Test remove user from company
 @pytest.mark.django_db
-def test_remove_users_from_company(owner_api_client, test_company_member):
-    # Remove user from company and check if request is successful
-    remove_user_request = owner_api_client.delete(f'{API_URL}/company_members/{test_company_member.id}/')
+def test_remove_users_from_company(owner_api_client, test_company_members):
+    test_company_member = test_company_members[0]
+
+    remove_user_request = owner_api_client.delete(
+        f'{API_URL}/company_members/{test_company_member.id}/'
+    )
     
     assert remove_user_request.status_code == 204
     with pytest.raises(CompanyMembers.DoesNotExist): 
@@ -102,9 +116,12 @@ def test_remove_users_from_company(owner_api_client, test_company_member):
 
 
 @pytest.mark.django_db
-def test_send_invite_to_company_member(owner_api_client, test_company_member, test_invites_payloads):
+def test_send_invite_to_company_member(owner_api_client, test_company_members, test_invites_payloads):
     test_invite_payload = test_invites_payloads[0]
-    test_invite_to_company_member = owner_api_client.post(f'{API_URL}/company_invites/', test_invite_payload)
+    test_invite_to_company_member = owner_api_client.post(
+        f'{API_URL}/company_invites/', 
+        test_invite_payload
+    )
 
     assert test_invite_to_company_member.status_code == 403
 
@@ -113,31 +130,35 @@ def test_send_invite_to_company_member(owner_api_client, test_company_member, te
 def test_send_invite_twice(owner_api_client, test_company_invite, test_invites_payloads):
     invite_payload = test_invites_payloads[0]
 
-    request = owner_api_client.post(f'{API_URL}/company_invites/', invite_payload)
+    request = owner_api_client.post(
+        f'{API_URL}/company_invites/', 
+        invite_payload
+    )
     assert request.status_code == 403
 
 
 @pytest.mark.django_db
 def test_owner_send_request_to_his_company(owner_api_client, test_company):
-    request_payload = {
-        'company': test_company.id
-    }
+    request_payload = UserRequestBodySchema(company=test_company.id)
 
-    request = owner_api_client.post(f'{API_URL}/users_requests/', request_payload)
+    request = owner_api_client.post(
+        f'{API_URL}/users_requests/', 
+        request_payload.model_dump()
+    )
     assert request.status_code == 403
 
-# Test apointing admin role and removing this role
+
 @pytest.mark.parametrize("role", [CompanyMemberRole.ADMIN.value, CompanyMemberRole.MEMBER.value])
 @pytest.mark.django_db
-def test_appoint_remove_admin_role(role, owner_api_client, test_company_member):
-    request_payload = {
-        'role': role
-    }
+def test_appoint_remove_admin_role(role, owner_api_client, test_company_members):
+    request_payload = CompanyMemberChangeRoleRequestBodySchema(role=role)
 
-    member_id = test_company_member.id
+    test_company_member = test_company_members[0]
 
-    request = owner_api_client.patch(f'{API_URL}/company_members/{member_id}/',
-                                     request_payload)
+    request = owner_api_client.patch(
+        f'{API_URL}/company_members/{test_company_member.id}/',
+        request_payload.model_dump()
+    )
     
     assert request.status_code == 200
     assert request.data['role'] == role
@@ -148,14 +169,16 @@ def test_calculate_avarage_score_in_company(user_api_client, test_quiz_results,
                                             test_company, test_owner, test_users):
     test_user = test_users[0]
 
-    test_company_user_rating_payload = {
-        "company": test_company.id,
-        "user": test_user.id
-    }
+    test_company_user_rating_payload = CompanyMemberRatingRequestBodySchema(
+        company=test_company.id,
+        user=test_user.id
+    )
 
     # Create company user rating
-    test_company_user_rating_request = user_api_client.post(f'{API_URL}/company_user_ratings/',
-                                                             test_company_user_rating_payload)
+    test_company_user_rating_request = user_api_client.post(
+        f'{API_URL}/company_user_ratings/',
+        test_company_user_rating_payload.model_dump()
+    )
     
     assert test_company_user_rating_request.status_code == 201
     assert test_company_user_rating_request.data['avarage_score'] == 0.0 # Default avarage score

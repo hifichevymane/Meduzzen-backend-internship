@@ -1,7 +1,7 @@
 import logging
 
 from companies.models import CompanyMembers
-from companies.serializers import CompanyMembersModelSerializer
+from companies.serializers import CompanyMembersReadModelSerializer
 from django.contrib.auth import get_user_model
 from quizzes.models import QuizResult
 from rest_framework import mixins, status
@@ -10,6 +10,8 @@ from rest_framework.filters import OrderingFilter
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
+
+from api.serializers import AnalyticsSerializer
 
 from .permissions import IsAbleToDeleteUser
 from .serializers import UserSerializer
@@ -78,7 +80,21 @@ class UserModelViewSet(GenericViewSet,
         try:
             queryset = CompanyMembers.objects.get(user_id=pk)
 
-            serializer = CompanyMembersModelSerializer(queryset)
-            return Response({'company': serializer.data['company']})
+            serializer = CompanyMembersReadModelSerializer(queryset, context={'request': request})
+            return Response(serializer.data)
         except CompanyMembers.DoesNotExist:
             return Response({'detail': 'Not found'}, status.HTTP_404_NOT_FOUND)
+    
+    # Get list of average scores of all users with dynamics over time
+    @action(detail=False, url_path='analytics', methods=['post'])
+    def users_analytics(self, request): 
+        serializer = AnalyticsSerializer(data=request.data)
+
+        if serializer.is_valid():
+            start_date = serializer.validated_data['start_date']
+            end_date = serializer.validated_data['end_date']
+
+            queryset = QuizResult.get_all_users_analytics(start_date, end_date)
+            return Response(queryset)
+        else:
+            return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
