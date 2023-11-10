@@ -43,7 +43,6 @@ class QuizResult(TimeStampedModel):
 
 
 class Question(TimeStampedModel):
-    quiz = models.ForeignKey('Quiz', on_delete=models.CASCADE)
     creator = models.ForeignKey(User, on_delete=models.CASCADE)
     text = models.TextField(blank=False, null=False)
     options = models.ManyToManyField('AnswerOption', related_name='options')
@@ -66,7 +65,7 @@ class Quiz(TimeStampedModel):
 
     @property
     def question_amount(self):
-        return len(Question.objects.filter(quiz=self))
+        return self.questions.count()
 
     @property
     def frequency(self):
