@@ -3,6 +3,7 @@ from datetime import datetime
 from api.models import TimeStampedModel
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.db.models import Sum
 
 from .enums import UserQuizStatus
 
@@ -32,7 +33,31 @@ class QuizResult(TimeStampedModel):
 
         return User.objects.annotate(
             average_score=models.Subquery(avg_scores_subquery)
-        ).values('id', 'average_score')
+        ).values()
+    
+    @staticmethod
+    def calculate_user_rating(user: models.ForeignKey) -> dict[str, float]:
+        user_obj = User.objects.get(pk=user.id)
+        all_users_quiz_results = QuizResult.objects.filter(
+            user=user, status=UserQuizStatus.COMPLETED.value
+        )
+
+        rating = 0
+        all_correct_answers = all_users_quiz_results.aggregate(
+            correct_answers_count=Sum('score')
+        )['correct_answers_count']
+        total_amount_questions = 0 # The amount of answered questions
+
+        for result in all_users_quiz_results:
+            total_amount_questions += result.quiz.question_amount
+        
+        # Calculate the rating
+        rating = round((all_correct_answers / total_amount_questions) * 100, 2)
+
+        user_obj.rating = rating
+        user_obj.save()
+
+        return {'rating': rating}
 
     class Meta:
         verbose_name = 'Quiz result'
@@ -80,15 +105,30 @@ class Quiz(TimeStampedModel):
         ).aggregate(rating=models.Avg('score'))['rating']
     
     @staticmethod
-    def get_last_completions_time_of_quizzes(company_id: models.ForeignKey):
-        last_result_subquery = QuizResult.objects.filter(
-            quiz=models.OuterRef('pk')
-        ).order_by('-updated_at').values('updated_at')[:1]
+    def get_last_completions_time_of_quizzes(
+        company_id: models.ForeignKey=None, 
+        user_id: models.ForeignKey=None) -> dict:
+        if company_id:
+            last_result_subquery = QuizResult.objects.filter(
+                quiz=models.OuterRef('pk'),
+                status=UserQuizStatus.COMPLETED.value
+            ).order_by('-updated_at').values('updated_at')[:1]
 
-        # Get all quizzes' ids with the last completion time 
-        queryset = Quiz.objects.filter(company_id=company_id).annotate(
-            last_taken_quiz_time=models.Subquery(last_result_subquery)
-        ).values('id', 'last_taken_quiz_time')
+            # Get all quizzes' ids with the last completion time 
+            queryset = Quiz.objects.filter(company_id=company_id).annotate(
+                last_taken_quiz_time=models.Subquery(last_result_subquery)
+            ).values()
+        else: # Check by user_id
+            last_result_subquery = QuizResult.objects.filter(
+                quiz=models.OuterRef('pk'),
+                user_id=user_id,
+                status=UserQuizStatus.COMPLETED.value
+            ).order_by('-updated_at').values('updated_at')[:1]
+
+            # Get all quizzes' ids with the last completion time 
+            queryset = Quiz.objects.all().annotate(
+                last_taken_quiz_time=models.Subquery(last_result_subquery)
+            ).values()
 
         return queryset
     
@@ -114,7 +154,7 @@ class Quiz(TimeStampedModel):
 
         return Quiz.objects.all().values('id').annotate(
             average_score=models.Subquery(avg_score_subquery)
-        ).values('id', 'average_score')
+        ).values()
 
     def get_quiz_analytics(self, start_date: datetime, end_date: datetime) -> dict[str: float]:
         return Quiz.objects.filter(

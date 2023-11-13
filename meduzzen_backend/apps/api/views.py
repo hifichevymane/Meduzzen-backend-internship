@@ -3,7 +3,7 @@ import logging
 from companies.models import CompanyMembers
 from companies.serializers import CompanyMembersReadModelSerializer
 from django.contrib.auth import get_user_model
-from quizzes.models import QuizResult
+from quizzes.models import QuizResult, Quiz
 from rest_framework import mixins, status
 from rest_framework.decorators import action, api_view
 from rest_framework.filters import OrderingFilter
@@ -54,25 +54,9 @@ class UserModelViewSet(GenericViewSet,
     @action(detail=False, url_path='calculate_avarage_score', methods=['get'])
     def calculate_avarage_score(self, request):
         current_user = request.user
-        user_obj = User.objects.get(pk=current_user.id)
-        all_users_quiz_results = QuizResult.objects.filter(user=current_user)
+        rating = QuizResult.calculate_user_rating(user=current_user)
 
-        rating = 0
-        all_correct_answers = 0 
-        total_amount_questions = 0 # The amount of answered questions
-
-        for result in all_users_quiz_results:
-            all_correct_answers += result.score
-            total_amount_questions += result.quiz.question_amount
-        
-        # Calculate the rating
-        rating = all_correct_answers / total_amount_questions
-
-        user_obj.rating = rating
-        user_obj.save()
-
-        serializer = self.serializer_class(user_obj)
-        return Response({'rating': serializer.data['rating']}, status.HTTP_200_OK)
+        return Response(rating)
 
     # Get user's current company
     @action(detail=True, url_path='current_company', methods=['get'])
@@ -98,3 +82,9 @@ class UserModelViewSet(GenericViewSet,
             return Response(queryset)
         else:
             return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
+    
+    @action(detail=True, url_path='last_quizzes_completion_times', methods=['get'])
+    def get_user_last_quizzes_completion_times(self, request, pk=None):
+        queryset = Quiz.get_last_completions_time_of_quizzes(user_id=pk)
+
+        return Response(queryset)

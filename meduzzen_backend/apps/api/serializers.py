@@ -37,5 +37,5 @@ class CurrentUserSerializer(serializers.ModelSerializer):
 
 # Serializer to do analytics with dynamics over time
 class AnalyticsSerializer(serializers.Serializer):
-    start_date = serializers.DateTimeField()
-    end_date = serializers.DateTimeField()
+    start_date = serializers.DateField()
+    end_date = serializers.DateField()
