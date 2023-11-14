@@ -3,7 +3,7 @@ import logging
 from companies.models import CompanyMembers
 from companies.serializers import CompanyMembersReadModelSerializer
 from django.contrib.auth import get_user_model
-from quizzes.models import QuizResult, Quiz
+from quizzes.models import Quiz, QuizResult
 from rest_framework import mixins, status
 from rest_framework.decorators import action, api_view
 from rest_framework.filters import OrderingFilter
@@ -56,6 +56,8 @@ class UserModelViewSet(GenericViewSet,
         current_user = request.user
         rating = QuizResult.calculate_user_rating(user=current_user)
 
+        if not rating:
+            return Response({'detail': 'You have not completed any quizzes'}, status.HTTP_404_NOT_FOUND)
         return Response(rating)
 
     # Get user's current company

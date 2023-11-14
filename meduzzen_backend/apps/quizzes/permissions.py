@@ -94,16 +94,20 @@ class IsAbleToExportData(BasePermission):
         is_company_admin = False
 
         if passed_company_id:
-            is_owner = Company.objects.filter(pk=passed_company_id, owner=current_user).exists()
+            is_owner = Company.objects.filter(pk=passed_company_id, owner=current_user.id).exists()
 
-            if passed_user_id:
+            if is_owner:
+                return True
+            else:
                 is_company_admin = CompanyMembers.objects.filter(
-                    user=current_user, 
+                    user=current_user.id, 
                     company_id=int(passed_company_id),
                     role=CompanyMemberRole.ADMIN.value
-                    ).exists()
+                ).exists()
 
+                if is_company_admin:
+                    return True
+                
         if passed_user_id:
             is_current_user = current_user.id == int(passed_user_id)
-
-        return is_current_user or is_owner or is_company_admin
+            return is_current_user

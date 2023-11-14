@@ -36,11 +36,13 @@ class QuizResult(TimeStampedModel):
         ).values()
     
     @staticmethod
-    def calculate_user_rating(user: models.ForeignKey) -> dict[str, float]:
+    def calculate_user_rating(user: models.ForeignKey) -> dict[str, float] | None:
         user_obj = User.objects.get(pk=user.id)
         all_users_quiz_results = QuizResult.objects.filter(
             user=user, status=UserQuizStatus.COMPLETED.value
         )
+        if not all_users_quiz_results:
+            return None
 
         rating = 0
         all_correct_answers = all_users_quiz_results.aggregate(

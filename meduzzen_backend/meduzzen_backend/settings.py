@@ -43,6 +43,8 @@ ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
+    'channels',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -54,6 +56,7 @@ INSTALLED_APPS = [
     'companies',
     'users',
     'quizzes',
+    'notifications',
     # Installed packages
     'rest_framework',
     'corsheaders',
@@ -224,7 +227,16 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'meduzzen_backend.wsgi.application'
+ASGI_APPLICATION = 'meduzzen_backend.asgi.application'
 
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': "channels_redis.core.RedisChannelLayer",
+        'CONFIG': {
+            'hosts': [(os.environ.get('REDIS_HOST', 'localhost'), os.environ.get('REDIS_PORT', 6379))],
+        }
+    }
+}
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
