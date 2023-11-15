@@ -26,9 +26,7 @@ class NotificationsConsumer(WebsocketConsumer):
         for notification in current_user_notifications_list:
             # Add type: 'init_notifications' to keep track of previous notifications
             notification['type'] = 'init_notifications'
-            raw_json_data = json.dumps(notification)
-            data = json.loads(raw_json_data)
-            self.send(text_data=json.dumps({'payload': data}))  
+            self.send(text_data=json.dumps({'payload': notification}))  
 
     def receive(self, text_data=None):
         recieved_data_json = json.loads(text_data)
