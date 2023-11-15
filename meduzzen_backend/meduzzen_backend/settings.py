@@ -244,16 +244,25 @@ DATABASES = {
 
 # Adding Redis caching
 # https://www.dragonflydb.io/faq/how-to-use-redis-with-django
+REDIS_LOCATION = f'redis://{os.environ.get("REDIS_HOST", "localhost")}:{os.environ.get("REDIS_PORT", 6379)}/0'
+
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
         # Get Redis url from .env file
-        'LOCATION': f'redis://{os.environ.get("REDIS_HOST", "localhost")}:{os.environ.get("REDIS_PORT", 6379)}/0',
+        'LOCATION': REDIS_LOCATION,
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
         }
     }
 }
+
+CELERY_BROKER_URL = REDIS_LOCATION
+CELERY_BROKER_TRANSPORT_OPTIONS = {'visibility_timeout': 3600}
+CELERY_RESULT_BACKEND = REDIS_LOCATION
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = os.environ.get('CELERY_TASK_SERIALIZER', 'json')
+CELERY_RESULT_SERIALIZER = os.environ.get('CELERY_RESULT_SERIALIZER', 'json')
 
 # Which user model to use
 AUTH_USER_MODEL = 'api.User'
