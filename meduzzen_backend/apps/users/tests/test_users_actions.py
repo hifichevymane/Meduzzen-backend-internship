@@ -135,4 +135,4 @@ def test_calculate_avarage_score_in_entire_system(user_api_client, test_quiz_res
 
     assert request.status_code == 200
     # Check test_company_actions line 180 
-    assert request.data['rating'] == 0.75
+    assert request.data['rating'] == 75.0

@@ -1,6 +1,7 @@
 from api.models import TimeStampedModel
 from django.contrib.auth import get_user_model
 from django.db import models
+from notifications.models import Notifications
 from quizzes.enums import UserQuizStatus
 from quizzes.models import QuizResult
 
@@ -62,6 +63,16 @@ class CompanyMembers(TimeStampedModel):
         ).values('user', 'last_taken_quiz_time')
 
         return queryset
+    
+    @staticmethod
+    def send_notifications_to_company_members(company_id: models.ForeignKey):
+        company_members = CompanyMembers.objects.filter(company_id=company_id)
+
+        for company_member in company_members:
+            Notifications.objects.create(
+                user=company_member.user,
+                text='New quiz was created. Check it out'
+            )
 
     class Meta:
         verbose_name = "Company Member"

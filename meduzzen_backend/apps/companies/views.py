@@ -99,7 +99,7 @@ class CompanyInvitationsModelViewSet(ModelViewSet):
         queryset = CompanyInvitations.objects.filter(company=pk)
         if not queryset:
             return Response({'detail': 'There are no invited users or the company does not exist'}, 
-                            status=status.HTTP_400_BAD_REQUEST)
+                            status=status.HTTP_404_NOT_FOUND)
         else:
             serializer = self.serializer_class(queryset, many=True, context={'request': request})
             return Response(serializer.data, status=status.HTTP_200_OK)

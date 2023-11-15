@@ -3,7 +3,6 @@ from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
 from quizzes.models import AnswerOption, Question, Quiz, QuizResult, UserQuizStatus, UsersAnswer
-from utils.caching import cache_quiz_result
 
 User = get_user_model()
 
@@ -57,6 +56,7 @@ class QuizReadModelSerializer(serializers.ModelSerializer):
     creator = UserSerializer()
     questions = QuestionReadModelSerializer(many=True)
     rating = serializers.SerializerMethodField()
+    frequency = serializers.ReadOnlyField()
 
     def get_rating(self, obj: Quiz):
         return obj.rating
@@ -83,11 +83,7 @@ class QuizWriteModelSerializer(serializers.ModelSerializer):
     
     def create(self, validated_data):
         user = self.context['request'].user
-        questions = self.context['request'].data.get('questions')
-        
         validated_data['creator'] = user
-        # Automatically assign amount of questions
-        validated_data['question_amount'] = len(questions)
         return super().create(validated_data)
 
 
@@ -114,16 +110,12 @@ class QuizResultModelSerializer(serializers.ModelSerializer):
         user = self.context['request'].user
 
         all_users_correct_answers = UsersAnswer.objects.filter(
-            quiz_id=instance.quiz.id, 
-            user=user, quiz_result=instance.pk,
+            user=user, quiz_result=instance,
             is_correct=True
         )
         
         instance.score = len(all_users_correct_answers)
         instance.status = UserQuizStatus.COMPLETED.value
-        instance.quiz.frequency += 1
-
-        cache_quiz_result(instance)
 
         return super().update(instance, validated_data)
 

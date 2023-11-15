@@ -5,8 +5,8 @@ from quizzes.models import AnswerOption, Question, Quiz, QuizResult, UsersAnswer
 
 class QuizAdmin(admin.ModelAdmin):
     search_fields = ('company', 'title', 'description', 'creator')
-    list_filter = ('company', 'frequency', 'questions', 'creator')
-    list_display = ('title', 'creator', 'company', 'frequency', 'pk')
+    list_filter = ('company', 'questions', 'creator')
+    list_display = ('title', 'creator', 'company', 'pk')
 
 
 class QuestionAdmin(admin.ModelAdmin):

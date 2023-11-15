@@ -44,7 +44,6 @@ def test_quizzes(test_questions, test_owner, test_company):
         creator=test_owner,
         company=test_company,
         questions=test_questions,
-        question_amount=len(test_questions)
     )
 
     test_quiz_2: Quiz = baker.make(
@@ -52,7 +51,6 @@ def test_quizzes(test_questions, test_owner, test_company):
         creator=test_owner,
         company=test_company,
         questions=test_questions,
-        question_amount=len(test_questions)
     )
 
     return test_quiz_1, test_quiz_2

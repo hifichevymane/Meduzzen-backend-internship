@@ -18,12 +18,13 @@ def test_user_analytics(user_api_client, test_users, test_quizzes):
     test_quiz = test_quizzes[0]
 
     test_user_1_result_1 = baker.make(
-        QuizResult, score=50, quiz=test_quiz,
+        QuizResult, score=20, quiz=test_quiz,
         user=test_user_1, 
         status=UserQuizStatus.COMPLETED.value
     )
+
     test_user_1_result_2 = baker.make(
-        QuizResult, score=28, quiz=test_quiz,
+        QuizResult, score=20, quiz=test_quiz,
         user=test_user_1,
         status=UserQuizStatus.COMPLETED.value
     )
@@ -31,12 +32,13 @@ def test_user_analytics(user_api_client, test_users, test_quizzes):
     test_user_1_average_score = (test_user_1_result_1.score + test_user_1_result_2.score) / 2
 
     test_user_2_result_1 = baker.make(
-        QuizResult, score=42, quiz=test_quiz,
+        QuizResult, score=50, quiz=test_quiz,
         user=test_user_2, 
         status=UserQuizStatus.COMPLETED.value
     )
+
     test_user_2_result_2 = baker.make(
-        QuizResult, score=58, quiz=test_quiz,
+        QuizResult, score=50, quiz=test_quiz,
         user=test_user_2,
         status=UserQuizStatus.COMPLETED.value
     )
@@ -57,12 +59,13 @@ def test_user_analytics(user_api_client, test_users, test_quizzes):
 
     # Make another request to check the difference
     test_user_1_result_3 = baker.make(
-        QuizResult, score=16, quiz=test_quiz,
+        QuizResult, score=30, quiz=test_quiz,
         user=test_user_1, 
         status=UserQuizStatus.COMPLETED.value
     )
+
     test_user_1_result_4 = baker.make(
-        QuizResult, score=37, quiz=test_quiz,
+        QuizResult, score=30, quiz=test_quiz,
         user=test_user_1,
         status=UserQuizStatus.COMPLETED.value
     )
@@ -70,12 +73,13 @@ def test_user_analytics(user_api_client, test_users, test_quizzes):
     test_user_1_average_score = (test_user_1_result_3.score + test_user_1_result_4.score) / 2
 
     test_user_2_result_3 = baker.make(
-        QuizResult, score=46, quiz=test_quiz,
+        QuizResult, score=50, quiz=test_quiz,
         user=test_user_2, 
         status=UserQuizStatus.COMPLETED.value
     )
+
     test_user_2_result_4 = baker.make(
-        QuizResult, score=53, quiz=test_quiz,
+        QuizResult, score=50, quiz=test_quiz,
         user=test_user_2,
         status=UserQuizStatus.COMPLETED.value
     )
@@ -103,13 +107,13 @@ def test_selected_user_analytics(user_api_client, test_users, test_quizzes):
     test_quiz_1_result_1 = baker.make(
         QuizResult, user=test_user, quiz=test_quiz_1,
         status=UserQuizStatus.COMPLETED.value,
-        score=35
+        score=50
     )
 
     test_quiz_1_result_2 = baker.make(
         QuizResult, user=test_user, quiz=test_quiz_1,
         status=UserQuizStatus.COMPLETED.value,
-        score=56
+        score=50
     )
 
     test_quiz_1_avg_score = (test_quiz_1_result_1.score + test_quiz_1_result_2.score) / 2
@@ -123,7 +127,7 @@ def test_selected_user_analytics(user_api_client, test_users, test_quizzes):
     test_quiz_2_result_2 = baker.make(
         QuizResult, user=test_user, quiz=test_quiz_2,
         status=UserQuizStatus.COMPLETED.value,
-        score=78
+        score=15
     )
 
     test_quiz_2_avg_score = (test_quiz_2_result_1.score + test_quiz_2_result_2.score) / 2
@@ -151,7 +155,7 @@ def test_selected_user_analytics(user_api_client, test_users, test_quizzes):
     test_quiz_1_result_4 = baker.make(
         QuizResult, user=test_user, quiz=test_quiz_1,
         status=UserQuizStatus.COMPLETED.value,
-        score=348
+        score=77
     )
 
     test_quiz_1_avg_score = (test_quiz_1_result_3.score + test_quiz_1_result_4.score) / 2
@@ -165,7 +169,7 @@ def test_selected_user_analytics(user_api_client, test_users, test_quizzes):
     test_quiz_2_result_4 = baker.make(
         QuizResult, user=test_user, quiz=test_quiz_2,
         status=UserQuizStatus.COMPLETED.value,
-        score=68
+        score=45
     )
 
     test_quiz_2_avg_score = (test_quiz_2_result_3.score + test_quiz_2_result_4.score) / 2

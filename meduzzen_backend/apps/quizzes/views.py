@@ -169,7 +169,7 @@ class QuizResultModelViewSet(GenericViewSet,
             self.permission_classes = (IsQuizResultScoreCalculated, )
         return super().get_permissions()
 
-    # Export data from Redis in CSV and JSON
+    # Export data in CSV and JSON
     @action(detail=False, url_path='export_data', methods=['get'],
             permission_classes=[IsAbleToExportData])
     def export_quiz_result_data(self, request):
