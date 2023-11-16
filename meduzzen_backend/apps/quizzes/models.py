@@ -112,16 +112,16 @@ class Quiz(TimeStampedModel):
         company_id: int, 
         user_id: int | None = None
     ) -> QuerySet:
-        filter_args = {
+        filter_kwargs = {
             'quiz': OuterRef('pk'),
             'status': UserQuizStatus.COMPLETED.value
         }
 
         if user_id:
-            filter_args['user_id'] = user_id
+            filter_kwargs['user_id'] = user_id
 
         last_result_subquery = QuizResult.objects.filter(
-            **filter_args
+            **filter_kwargs
         ).order_by('-updated_at').values('updated_at')[:1]
 
         # Get all quizzes' ids with the last completion time 
