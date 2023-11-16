@@ -16,16 +16,13 @@ def send_reminder_quiz_notification():
         )
 
         for quiz in company_member_last_taken_quiz_times:
-            if (quiz.last_taken_quiz_time and 
-                quiz.last_taken_quiz_time + timezone.timedelta(days=quiz.frequency) < timezone.now()):
-                CompanyMembers.create_reminder_quiz_notification(
-                    company_id=company_member.company.id,
-                    quiz_name=quiz.title
-                )
+            remind_company_member_condition: bool = (
+                quiz.last_taken_quiz_time and 
+                quiz.last_taken_quiz_time + timezone.timedelta(days=quiz.frequency) < timezone.now()
+            )
 
-            else:
-                CompanyMembers.create_reminder_quiz_notification(
-                        company_id=company_member.company.id,
-                        quiz_name=quiz.title,
-                        is_quiz_completed=False
-                    )
+            CompanyMembers.create_reminder_quiz_notification(
+                company_id=company_member.company.id,
+                quiz_name=quiz.title,
+                is_quiz_completed=remind_company_member_condition
+            )

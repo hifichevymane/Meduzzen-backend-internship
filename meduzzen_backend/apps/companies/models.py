@@ -1,8 +1,9 @@
 from api.models import TimeStampedModel
 from django.contrib.auth import get_user_model
 from django.db import models
-from django.db.models import QuerySet
+from django.db.models import OuterRef, QuerySet, Subquery
 from notifications.models import Notifications
+from quizzes.enums import UserQuizStatus
 from quizzes.models import QuizResult
 
 from .enums import CompanyInvitationStatus, CompanyMemberRole, Visibility
@@ -53,12 +54,13 @@ class CompanyMembers(TimeStampedModel):
     
     @staticmethod
     def get_last_taken_quiz_times(company_id: int):
-        last_quiz_time_subquery = QuizResult.filter_last_quiz_results(
-            is_company_members_model_subquery=True
-        )
+        last_quiz_time_subquery = QuizResult.objects.filter(
+            user=OuterRef('user_id'),
+            status=UserQuizStatus.COMPLETED.value
+        ).order_by('-updated_at').values('updated_at')[:1]
 
         queryset = CompanyMembers.objects.filter(company_id=company_id).annotate(
-            last_taken_quiz_time=models.Subquery(last_quiz_time_subquery)
+            last_taken_quiz_time=Subquery(last_quiz_time_subquery)
         ).values('user', 'last_taken_quiz_time')
 
         return queryset
@@ -85,7 +87,7 @@ class CompanyMembers(TimeStampedModel):
     def create_reminder_quiz_notification(
         company_id: int,
         quiz_name: str,
-        is_quiz_completed: bool = True
+        is_quiz_completed: bool
     ) -> None:
         company_members = CompanyMembers.objects.filter(company_id=company_id)
 

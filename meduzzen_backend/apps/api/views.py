@@ -85,7 +85,7 @@ class UserModelViewSet(GenericViewSet,
     
     @action(detail=True, url_path='last_quizzes_completion_times', methods=['get'])
     def get_user_last_quizzes_completion_times(self, request, pk=None):
-        company_user_works_in = CompanyMembers.get_company_user_works_in(user_id=pk)
+        company_user_works_in = CompanyMembers.get_company_user_works_in(user_id=pk).last()
 
         if company_user_works_in:
             queryset = Quiz.get_last_completions_time_of_quizzes(
