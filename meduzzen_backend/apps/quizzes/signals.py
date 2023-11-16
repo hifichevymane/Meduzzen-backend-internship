@@ -8,4 +8,4 @@ from quizzes.models import Quiz
 @receiver(signal=post_save, sender=Quiz)
 def send_notifications_to_company_members(sender, instance: Quiz, created, **kwargs):
     if created:
-        CompanyMembers.send_notifications_to_company_members(company_id=instance.company.id)
+        CompanyMembers.create_notifications_to_company_members(company_id=instance.company.id)

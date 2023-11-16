@@ -6,7 +6,7 @@ from quizzes.models import Quiz
 
 
 @app.task
-def send_beat_reminder_quiz_notification():
+def send_reminder_quiz_notification():
     current_company_company_members = CompanyMembers.objects.all()
 
     for company_member in current_company_company_members:
@@ -16,17 +16,15 @@ def send_beat_reminder_quiz_notification():
         )
 
         for quiz in company_member_last_taken_quiz_times:
-            if quiz.last_taken_quiz_time:
-                frequency_in_days = timezone.timedelta(days=quiz.frequency)
-
-                if quiz.last_taken_quiz_time + frequency_in_days < timezone.now():
-                    CompanyMembers.send_reminder_quiz_notification(
-                        company_id=company_member.company.id,
-                        quiz_name=quiz.title
-                    )
+            if (quiz.last_taken_quiz_time and 
+                quiz.last_taken_quiz_time + timezone.timedelta(days=quiz.frequency) < timezone.now()):
+                CompanyMembers.create_reminder_quiz_notification(
+                    company_id=company_member.company.id,
+                    quiz_name=quiz.title
+                )
 
             else:
-                CompanyMembers.send_reminder_quiz_notification(
+                CompanyMembers.create_reminder_quiz_notification(
                         company_id=company_member.company.id,
                         quiz_name=quiz.title,
                         is_quiz_completed=False

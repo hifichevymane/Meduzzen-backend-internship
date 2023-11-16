@@ -11,7 +11,7 @@ app.autodiscover_tasks()
 
 app.conf.beat_schedule = {
     'send_quiz_reminder_notification_every_24_hours': {
-        'task': 'quizzes.tasks.send_beat_reminder_quiz_notification',
+        'task': 'quizzes.tasks.send_reminder_quiz_notification',
         'schedule': crontab(minute=0, hour=0) # Execute task every 24 hour at midnight
     }
 }
