@@ -85,6 +85,11 @@ class QuizWriteModelSerializer(serializers.ModelSerializer):
         user = self.context['request'].user
         validated_data['creator'] = user
         return super().create(validated_data)
+    
+
+class QuizLastCompletionTimeSerializer(QuizWriteModelSerializer):
+    frequency = serializers.ReadOnlyField() # Quiz frequency property
+    last_taken_quiz_time = serializers.ReadOnlyField() # Queryset anotated value
 
 
 class QuizResultModelSerializer(serializers.ModelSerializer):

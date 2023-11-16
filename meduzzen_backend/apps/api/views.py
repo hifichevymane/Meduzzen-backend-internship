@@ -4,6 +4,7 @@ from companies.models import CompanyMembers
 from companies.serializers import CompanyMembersReadModelSerializer
 from django.contrib.auth import get_user_model
 from quizzes.models import Quiz, QuizResult
+from quizzes.serializers import QuizLastCompletionTimeSerializer
 from rest_framework import mixins, status
 from rest_framework.decorators import action, api_view
 from rest_framework.filters import OrderingFilter
@@ -63,13 +64,10 @@ class UserModelViewSet(GenericViewSet,
     # Get user's current company
     @action(detail=True, url_path='current_company', methods=['get'])
     def get_company_user_works_in(self, request, pk=None):
-        try:
-            queryset = CompanyMembers.objects.get(user_id=pk)
+        queryset = CompanyMembers.get_company_user_works_in(user_id=pk)
 
-            serializer = CompanyMembersReadModelSerializer(queryset, context={'request': request})
-            return Response(serializer.data)
-        except CompanyMembers.DoesNotExist:
-            return Response({'detail': 'Not found'}, status.HTTP_404_NOT_FOUND)
+        serializer = CompanyMembersReadModelSerializer(queryset, context={'request': request})
+        return Response(serializer.data)
     
     # Get list of average scores of all users with dynamics over time
     @action(detail=False, url_path='analytics', methods=['post'])
@@ -87,6 +85,14 @@ class UserModelViewSet(GenericViewSet,
     
     @action(detail=True, url_path='last_quizzes_completion_times', methods=['get'])
     def get_user_last_quizzes_completion_times(self, request, pk=None):
-        queryset = Quiz.get_last_completions_time_of_quizzes(user_id=pk)
+        company_user_works_in = CompanyMembers.get_company_user_works_in(user_id=pk).last()
 
-        return Response(queryset)
+        if company_user_works_in:
+            queryset = Quiz.get_last_completions_time_of_quizzes(
+                user_id=pk, 
+                company_id=company_user_works_in.company.id
+            )
+            serializer = QuizLastCompletionTimeSerializer(queryset, many=True)
+            return Response(serializer.data)
+        else:
+            return Response({'detail': 'Not found'}, status.HTTP_404_NOT_FOUND)

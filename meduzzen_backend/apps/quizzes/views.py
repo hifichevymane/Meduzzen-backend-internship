@@ -24,6 +24,7 @@ from quizzes.serializers import (
     AnswerOptionModelSerializer,
     QuestionReadModelSerializer,
     QuestionWriteModelSerializer,
+    QuizLastCompletionTimeSerializer,
     QuizReadModelSerializer,
     QuizResultModelSerializer,
     QuizWriteModelSerializer,
@@ -74,7 +75,12 @@ class QuizModelViewSet(ModelViewSet):
             methods=['get'], permission_classes=(IsAbleToGetLastCompletionTime, ))
     def get_the_last_completions_time_of_quizzes(self, request, pk=None):
         queryset = Quiz.get_last_completions_time_of_quizzes(company_id=pk)
-        return Response(queryset)
+
+        if queryset:
+            serializer = QuizLastCompletionTimeSerializer(queryset, many=True)
+            return Response(serializer.data)
+        else:
+            return Response({'detail': 'No quizzes were found'}, status.HTTP_404_NOT_FOUND)
     
     # Get the analytics of the quiz by quiz_id
     @action(detail=True, url_path='analytics', methods=['post'])

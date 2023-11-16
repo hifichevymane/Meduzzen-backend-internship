@@ -1,6 +1,7 @@
 from api.models import TimeStampedModel
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.db.models import OuterRef, QuerySet, Subquery
 from notifications.models import Notifications
 from quizzes.enums import UserQuizStatus
 from quizzes.models import QuizResult
@@ -52,27 +53,60 @@ class CompanyMembers(TimeStampedModel):
                             choices=CompanyMemberRole.choices())
     
     @staticmethod
-    def get_last_taken_quiz_times(company_id: models.ForeignKey):
+    def get_last_taken_quiz_times(company_id: int):
         last_quiz_time_subquery = QuizResult.objects.filter(
-            user=models.OuterRef('user_id'),
+            user=OuterRef('user_id'),
             status=UserQuizStatus.COMPLETED.value
         ).order_by('-updated_at').values('updated_at')[:1]
 
         queryset = CompanyMembers.objects.filter(company_id=company_id).annotate(
-            last_taken_quiz_time=models.Subquery(last_quiz_time_subquery)
+            last_taken_quiz_time=Subquery(last_quiz_time_subquery)
         ).values('user', 'last_taken_quiz_time')
 
         return queryset
     
     @staticmethod
-    def send_notifications_to_company_members(company_id: models.ForeignKey):
+    def get_company_user_works_in(user_id: int) -> QuerySet:
+        return CompanyMembers.objects.filter(user_id=user_id)
+    
+    @staticmethod
+    def create_notifications_to_company_members(company_id: int) -> None:
         company_members = CompanyMembers.objects.filter(company_id=company_id)
+        company_members_notifications_list: list[Notifications] = []
 
         for company_member in company_members:
-            Notifications.objects.create(
+            company_member_notification = Notifications(
                 user=company_member.user,
                 text='New quiz was created. Check it out'
             )
+            company_members_notifications_list.append(company_member_notification)
+        
+        Notifications.objects.bulk_create(company_members_notifications_list)
+    
+    @staticmethod
+    def create_reminder_quiz_notification(
+        company_id: int,
+        quiz_name: str,
+        is_quiz_completed: bool
+    ) -> None:
+        company_members = CompanyMembers.objects.filter(company_id=company_id)
+
+        reminder_quiz_notifications_list: list[Notifications] = []
+        
+        for company_member in company_members:
+            if is_quiz_completed:
+                notification_text = f'Do you want to undergo {quiz_name} quiz?'
+            else:
+                notification_text = f'You have not completed {quiz_name} quiz yet. Wanna undergo?'
+
+            reminder_quiz_notification = Notifications(
+                user=company_member.user,
+                text=notification_text
+            )
+
+            reminder_quiz_notifications_list.append(reminder_quiz_notification)
+        
+        Notifications.objects.bulk_create(reminder_quiz_notifications_list)
 
     class Meta:
         verbose_name = "Company Member"
