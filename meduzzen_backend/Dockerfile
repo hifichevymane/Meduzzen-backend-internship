@@ -21,5 +21,4 @@ COPY start.sh .
 # Give access rights to start.sh
 RUN chmod +x start.sh
 
-# Run the script
-ENTRYPOINT [ "./start.sh" ]
+EXPOSE 8000

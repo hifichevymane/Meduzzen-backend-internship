@@ -1,6 +1,7 @@
 from api.models import TimeStampedModel
 from django.contrib.auth import get_user_model
 from django.db import models
+from notifications.models import Notifications
 from quizzes.enums import UserQuizStatus
 from quizzes.models import QuizResult
 
@@ -62,6 +63,45 @@ class CompanyMembers(TimeStampedModel):
         ).values('user', 'last_taken_quiz_time')
 
         return queryset
+    
+    @staticmethod
+    def get_company_user_works_in(user_id: models.ForeignKey):
+        try:
+            company_member = CompanyMembers.objects.get(user_id=user_id)
+            return company_member
+        except CompanyMembers.DoesNotExist:
+            return None
+    
+    @staticmethod
+    def send_notifications_to_company_members(company_id: models.ForeignKey):
+        company_members = CompanyMembers.objects.filter(company_id=company_id)
+
+        for company_member in company_members:
+            Notifications.objects.create(
+                user=company_member.user,
+                text='New quiz was created. Check it out'
+            )
+    
+    @staticmethod
+    def send_reminder_quiz_notification(
+        company_id: models.ForeignKey,
+        quiz_name: models.CharField,
+        is_quiz_completed = True
+    ):
+        company_members = CompanyMembers.objects.filter(company_id=company_id)
+
+        if is_quiz_completed:
+            for company_member in company_members:
+                Notifications.objects.create(
+                    user=company_member.user,
+                    text=f'Do you want to undergo {quiz_name} quiz?'
+                )
+        else: # If user has hot completed quiz yet
+            for company_member in company_members:
+                Notifications.objects.create(
+                    user=company_member.user,
+                    text=f'You have not completed {quiz_name} quiz yet. Wanna undergo?'
+                )
 
     class Meta:
         verbose_name = "Company Member"

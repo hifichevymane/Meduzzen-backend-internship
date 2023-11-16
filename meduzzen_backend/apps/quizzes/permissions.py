@@ -55,8 +55,12 @@ class IsAbleToEditAnswerOptionQuestion(BasePermission):
 class DoesUserAnswerExistAlready(BasePermission):
     def has_permission(self, request, view):
         question_id = request.data.get('question')
+        quiz_result_id = request.data.get('quiz_result_id')
         user = request.user
-        return not UsersAnswer.objects.filter(question_id=question_id, user=user).exists()
+        return not UsersAnswer.objects.filter(
+            question_id=question_id, user=user,
+            quiz_result_id=quiz_result_id
+        ).exists()
 
 
 # Check if user has already the same quiz with pending status(he is still undergoing it)
@@ -90,16 +94,20 @@ class IsAbleToExportData(BasePermission):
         is_company_admin = False
 
         if passed_company_id:
-            is_owner = Company.objects.filter(pk=passed_company_id, owner=current_user).exists()
+            is_owner = Company.objects.filter(pk=passed_company_id, owner=current_user.id).exists()
 
-            if passed_user_id:
+            if is_owner:
+                return True
+            else:
                 is_company_admin = CompanyMembers.objects.filter(
-                    user=current_user, 
+                    user=current_user.id, 
                     company_id=int(passed_company_id),
                     role=CompanyMemberRole.ADMIN.value
-                    ).exists()
+                ).exists()
 
+                if is_company_admin:
+                    return True
+                
         if passed_user_id:
             is_current_user = current_user.id == int(passed_user_id)
-
-        return is_current_user or is_owner or is_company_admin
+            return is_current_user

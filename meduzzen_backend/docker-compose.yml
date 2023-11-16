@@ -4,6 +4,7 @@ services:
   api:
     image: meduzzen-backend-api
     container_name: django
+    entrypoint: ./start.sh
     tty: true
     stdin_open: true
     volumes:
@@ -16,6 +17,49 @@ services:
       - redis
     env_file:
       - .env
+    networks:
+      - api-db-redis
+
+  celery:
+    image: meduzzen-backend-api
+    container_name: celery
+    command: celery -A meduzzen_backend worker -l INFO
+    volumes:
+      - .:/code
+      - ./code:/apps
+    depends_on:
+      - postgres-db
+      - redis
+    env_file:
+      - .env
+    networks:
+      - api-db-redis
+
+  celery-beat:
+    image: meduzzen-backend-api
+    container_name: celery-beat
+    command: celery -A meduzzen_backend beat -l INFO --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    volumes:
+      - .:/code
+      - ./code:/apps
+    depends_on:
+      - postgres-db
+      - redis
+    env_file:
+      - .env
+    networks:
+      - api-db-redis
+
+  flower:
+    image: mher/flower:latest
+    container_name: flower
+    command: celery --broker=redis://redis_cache:6379/0 flower
+    ports:
+      - 5555:5555
+    depends_on:
+      - celery
+      - celery-beat
+      - redis
     networks:
       - api-db-redis
 

@@ -53,9 +53,10 @@ class UsersRequestsModelViewSet(ModelViewSet):
     def get_company_join_requests(self, request, pk=None):
         queryset = UsersRequests.objects.filter(company=pk)
         if not queryset:
-            return Response({'detail': 
-                             'There are no join requests to the company or the company does not exist'}, 
-                            status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {'detail': 'There are no join requests to the company or the company does not exist'}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
         else:
             serializer = self.serializer_class(queryset, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)

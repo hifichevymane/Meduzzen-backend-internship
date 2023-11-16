@@ -43,6 +43,8 @@ ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
+    'channels',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -54,11 +56,13 @@ INSTALLED_APPS = [
     'companies',
     'users',
     'quizzes',
+    'notifications',
     # Installed packages
     'rest_framework',
     'corsheaders',
     'djoser',
     'social_django',
+    'django_celery_beat',
     # PostgreSQL support
     'django.contrib.postgres',
 ]
@@ -224,7 +228,16 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'meduzzen_backend.wsgi.application'
+ASGI_APPLICATION = 'meduzzen_backend.asgi.application'
 
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': "channels_redis.core.RedisChannelLayer",
+        'CONFIG': {
+            'hosts': [(os.environ.get('REDIS_HOST', 'localhost'), os.environ.get('REDIS_PORT', 6379))],
+        }
+    }
+}
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
@@ -263,6 +276,7 @@ CELERY_RESULT_BACKEND = REDIS_LOCATION
 CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = os.environ.get('CELERY_TASK_SERIALIZER', 'json')
 CELERY_RESULT_SERIALIZER = os.environ.get('CELERY_RESULT_SERIALIZER', 'json')
+CELERY_TIMEZONE = os.environ.get('DJANGO_TIME_ZONE', 'UTC')
 
 # Which user model to use
 AUTH_USER_MODEL = 'api.User'
@@ -295,7 +309,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = os.environ.get('DJANGO_TIME_ZONE', 'UTC')
 
 USE_I18N = True
 
