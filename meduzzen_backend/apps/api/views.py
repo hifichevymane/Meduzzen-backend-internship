@@ -66,8 +66,11 @@ class UserModelViewSet(GenericViewSet,
     def get_company_user_works_in(self, request, pk=None):
         queryset = CompanyMembers.get_company_user_works_in(user_id=pk)
 
-        serializer = CompanyMembersReadModelSerializer(queryset, context={'request': request})
-        return Response(serializer.data)
+        if queryset:
+            serializer = CompanyMembersReadModelSerializer(queryset, context={'request': request})
+            return Response(serializer.data)
+        else:
+            return Response({'detail': 'Not found'}, status.HTTP_404_NOT_FOUND)
     
     # Get list of average scores of all users with dynamics over time
     @action(detail=False, url_path='analytics', methods=['post'])
