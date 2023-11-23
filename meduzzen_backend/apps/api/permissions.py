@@ -3,7 +3,7 @@ from companies.models import Company, CompanyMembers
 from rest_framework.permissions import BasePermission
 
 
-class IsAbleToDeleteUser(BasePermission):
+class IsAbleToDeleteUpdateUser(BasePermission):
     def has_permission(self, request, view):
         return request.user.is_authenticated
     
