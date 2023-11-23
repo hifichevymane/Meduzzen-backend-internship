@@ -5,16 +5,16 @@ from companies.serializers import CompanyMembersReadModelSerializer
 from django.contrib.auth import get_user_model
 from quizzes.models import Quiz, QuizResult
 from quizzes.serializers import QuizLastCompletionTimeSerializer
-from rest_framework import mixins, status
+from rest_framework import status
 from rest_framework.decorators import action, api_view
 from rest_framework.filters import OrderingFilter
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.viewsets import GenericViewSet
+from rest_framework.viewsets import ModelViewSet
 
 from api.serializers import AnalyticsSerializer
 
-from .permissions import IsAbleToDeleteUser
+from .permissions import IsAbleToDeleteUpdateUser
 from .serializers import UserSerializer
 
 User = get_user_model()
@@ -33,18 +33,14 @@ def health_check(request):
 
 
 # User ViewSet to make CRUD operations. Use mixins to unable PUT PATCH request
-class UserModelViewSet(GenericViewSet,
-                       mixins.RetrieveModelMixin,
-                       mixins.ListModelMixin,
-                       mixins.CreateModelMixin,
-                       mixins.DestroyModelMixin):
+class UserModelViewSet(ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (IsAuthenticated, )
 
     def get_permissions(self):
-        if self.action == 'destroy':
-            self.permission_classes = (IsAbleToDeleteUser, )
+        if self.action in ['destroy', 'partial_update', 'update']:
+            self.permission_classes = (IsAbleToDeleteUpdateUser, )
         return super().get_permissions()
 
     # Ordering by 'created_at' field

@@ -56,6 +56,8 @@ services:
     command: celery --broker=redis://redis_cache:6379/0 flower
     ports:
       - 5555:5555
+    env_file:
+      - .env
     depends_on:
       - celery
       - celery-beat
